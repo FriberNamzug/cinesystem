@@ -1,0 +1,1 @@
+Proyecto de un sistema de un cine, para controlar las peliculas que se muestran.
