@@ -1,5 +1,8 @@
 import express from 'express'
 import morgan from 'morgan'
+import path from 'path'
+import { fileURLToPath } from 'url';
+
 
 import usuariosRoutes from './routes/usuarios.routes.js'
 import authRoutes from './routes/auth.routes.js'
@@ -11,9 +14,13 @@ import idiomasRoutes from './routes/idiomas.routes.js'
 
 
 const app = express()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 
 app.use(express.json())
+app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
 
 app.use("/usuarios", usuariosRoutes)
