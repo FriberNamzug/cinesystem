@@ -1,12 +1,14 @@
 import { Router } from "express";
-import * as auth from '../controllers/peliculas.controller'
+import * as peliculas from '../controllers/peliculas.controller.js'
 import verifyToken from "../middlewares/verifyToken.js";
 
 const router = Router();
 
-router.get("/", peliculas.getPeliculas)
-
-
+router.get("/p/", peliculas.getPeliculas)
+router.get("/:id", peliculas.getPelicula)
+router.post("/", verifyToken, peliculas.createPelicula)
+router.put("/:id_pelicula", verifyToken, peliculas.updatePelicula)
+router.delete("/:id", verifyToken, peliculas.deletePelicula)
 
 
 export default router;

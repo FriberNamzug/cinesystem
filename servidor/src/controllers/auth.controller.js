@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
+import logger from "../config/logger.js";
 import {
     JWT_SECRET,
     JWT_EXPIRESIN
@@ -18,13 +19,15 @@ export const signIn = async (req, res) => {
         if (!validPassword) return res.status(401).json({ message: "Contraseña incorrecta" });
 
         const token = jwt.sign({ id: user[0].id_usuario }, JWT_SECRET, {
-            expiresIn: `${JWT_EXPIRESIN}`,
+            expiresIn: 86400 * 2, // 2 days
         });
+
 
         res.json({ token });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
 
@@ -33,6 +36,8 @@ export const signUp = async (req, res) => {
         const { nombre, email, password } = req.body;
         //Validaciones de los datos que se traen
         if (!nombre || !email || !password) return res.status(400).json({ msg: "Por favor, ingrese todos los campos" });
+        if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
+        if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ msg: "El nombre o el email no pueden tener más de 45 caracteres" });
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ msg: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
         const user = await pool.query("SELECT email FROM usuarios WHERE email = ?", [email]);
@@ -46,7 +51,7 @@ export const signUp = async (req, res) => {
         const [newUser] = await pool.query("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?) ", [nombre, email, passwordHash]);
 
         const token = jwt.sign({ id: newUser.insertId }, JWT_SECRET, {
-            expiresIn: `${JWT_EXPIRESIN}`,
+            expiresIn: 86400 * 2, // 2 days
         });
 
         res.json({
@@ -60,6 +65,7 @@ export const signUp = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: error.message });
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
 
@@ -72,6 +78,7 @@ export const verifyToken = async (req, res) => {
         })
     }
     catch (error) {
-        errorLog(error, res)
+        res.status(500).json({ message: error.message });
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }

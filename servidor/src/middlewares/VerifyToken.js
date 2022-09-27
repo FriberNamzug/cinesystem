@@ -7,8 +7,6 @@ export default function verifyToken(req, res, next) {
         if (!accessToken) return res.status(401).json({ message: 'No tienes autorización para estar aquí' })
         const token = accessToken.split(' ')[1]
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-            console.log(process.env.JWT_SECRET)
-            console.log(accessToken)
             if (err) return res.status(401).json({ message: 'El token de acceso no es válido' })
             req.user = user
             next()
