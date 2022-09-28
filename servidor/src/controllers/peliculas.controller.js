@@ -5,6 +5,8 @@ export const getPeliculas = async (req, res) => {
     try {
         /* Recuperamos la pagina y el limite de la ruta */
         const { pagina, limite } = req.query;
+        
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
 
 
         /* Calculamos el offset */

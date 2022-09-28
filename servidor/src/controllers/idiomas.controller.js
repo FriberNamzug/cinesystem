@@ -3,9 +3,21 @@ import pool from "../config/db.js";
 
 export const getIdiomas = async (req, res) => {
     try {
-        const idiomas = await pool.query("SELECT * FROM idiomas WHERE status = 1");
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM idiomas");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const idiomas = await pool.query("SELECT * FROM idiomas LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+
         if (idiomas[0].length === 0) return res.status(404).json({ message: "No hay idiomas" });
-        res.status(200).json(idiomas[0]);
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            idiomas: idiomas[0],
+        });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });

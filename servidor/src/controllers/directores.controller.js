@@ -3,11 +3,23 @@ import pool from "../config/db.js";
 
 export const getDirectores = async (req, res) => {
     try {
-        const response = await pool.query('SELECT * FROM directores');
-        if (response[0].length === 0) return res.status(404).json({ message: "No hay directores" });
-        res.status(200).json(response[0]);
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM directores");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const directores = await pool.query("SELECT * FROM directores LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (directores[0].length === 0) return res.status(404).json({ message: "No hay directores" });
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            directores: directores[0],
+        });
     } catch (error) {
-        logger.error(error);
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: 'Error al obtener los directores' });
     }
 }
@@ -20,7 +32,7 @@ export const getDirector = async (req, res) => {
         res.status(200).json(response[0]);
 
     } catch (error) {
-        logger.error(error);
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: 'Error al obtener el director' });
     }
 }
@@ -52,7 +64,7 @@ export const createDirector = async (req, res) => {
 
     }
     catch (error) {
-        logger.error(error);
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: 'Error al crear el director' });
     }
 }
@@ -90,7 +102,7 @@ export const updateDirector = async (req, res) => {
 
     }
     catch (error) {
-        logger.error(error);
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: 'Error al actualizar el director' });
     }
 }
@@ -113,7 +125,7 @@ export const deleteDirector = async (req, res) => {
         });
 
     } catch (error) {
-        logger.error(error);
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: 'Error al eliminar el director' });
     }
 }

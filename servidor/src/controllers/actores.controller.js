@@ -3,11 +3,24 @@ import pool from "../config/db.js";
 
 export const getActores = async (req, res) => {
     try {
-        const actores = await pool.query("SELECT * FROM actores");
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM actores");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const actores = await pool.query("SELECT * FROM actores LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+
         if (actores[0].length === 0) return res.status(404).json({ message: "No hay actores" });
-        res.status(200).json(actores[0]);
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            actores: actores[0],
+        });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 
@@ -19,6 +32,7 @@ export const getActor = async (req, res) => {
         res.json(actor[0]);
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 
@@ -53,6 +67,7 @@ export const createActor = async (req, res) => {
     }
     catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 
@@ -97,6 +112,7 @@ export const updateActor = async (req, res) => {
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 
@@ -114,5 +130,6 @@ export const deleteActor = async (req, res) => {
         res.json({ message: "Actor eliminado" });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 } 

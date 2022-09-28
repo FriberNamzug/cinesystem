@@ -3,9 +3,21 @@ import pool from "../config/db.js";
 
 export const getGeneros = async (req, res) => {
     try {
-        const generos = await pool.query("SELECT * FROM generos WHERE status = 1");
-        if (generos[0].length === 0) return res.status(404).json({ message: "No hay géneros" });
-        res.status(200).json(generos[0]);
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM generos");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const generos = await pool.query("SELECT * FROM generos LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (generos[0].length === 0) return res.status(404).json({ message: "No hay generos" });
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            generos: generos[0],
+        });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
@@ -93,7 +105,7 @@ export const deleteGenero = async (req, res) => {
 
         const relacion = await pool.query("SELECT id_genero FROM peliculas_generos WHERE id_genero = ? ", [id]);
         if (relacion[0].length > 0) return res.status(400).json({ message: "No se puede eliminar el género porque tiene peliculas relacionadas" });
-    
+
 
         const deleteGenero = await pool.query("UPDATE generos SET status = 0 WHERE id_genero = ?", [id]);
         if (deleteGenero[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar el género" });
