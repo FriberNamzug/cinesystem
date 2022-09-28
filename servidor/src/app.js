@@ -11,6 +11,7 @@ import generosRoutes from './routes/generos.routes.js'
 import directoresRoutes from './routes/directores.routes.js'
 import actoresRoutes from './routes/actores.routes.js'
 import idiomasRoutes from './routes/idiomas.routes.js'
+import uploadsRoutes from './routes/uploads.routes.js'
 
 
 const app = express()
@@ -30,10 +31,11 @@ app.use("/generos", generosRoutes)
 app.use("/directores", directoresRoutes)
 app.use("/actores", actoresRoutes)
 app.use("/idiomas", idiomasRoutes)
+app.use("/uploads", uploadsRoutes)
 
 
 app.use((req, res) => {
-    res.status(404).json({ message: "Ruta no encontrada" })
+    res.status(400).json({ message: "Sin permisos para acceder a este recurso" })
 })
 
 export default app

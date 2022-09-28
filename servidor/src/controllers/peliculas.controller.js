@@ -27,12 +27,16 @@ export const getPeliculas = async (req, res) => {
 
             const idiomas = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
 
+            const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
+
             peliculas[0][i].generos = generos[0];
             peliculas[0][i].actores = actores[0];
             peliculas[0][i].directores = directores[0];
             peliculas[0][i].idiomas = idiomas[0];
+            peliculas[0][i].imagenes = imagenes[0];
 
         }
+
 
 
         res.status(200).json({
@@ -66,6 +70,8 @@ export const getPelicula = async (req, res) => {
 
         const idiomas = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [id]);
 
+        const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [id]);
+
         const peliculaCompleta = {
             id_pelicula: pelicula[0][0].id_pelicula,
             titulo: pelicula[0][0].titulo,
@@ -78,7 +84,8 @@ export const getPelicula = async (req, res) => {
             generos: generos[0],
             actores: actores[0],
             directores: directores[0],
-            idiomas: idiomas[0]
+            idiomas: idiomas[0],
+            imagenes: imagenes[0],
         }
 
 
@@ -217,18 +224,15 @@ export const updatePelicula = async (req, res) => {
         const peliculaActualizada = await pool.query("UPDATE peliculas SET ? WHERE id_pelicula = ? AND status = 1", [updatePelicula, id_pelicula]);
         if (peliculaActualizada[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo actualizar la película" });
 
-        /* Obtenemos los id_idioma de la pelicula */
-        const idiomasPelicula = await pool.query("SELECT id_idioma FROM peliculas_idiomas WHERE id_pelicula = ?", [id_pelicula]);
-        if (idiomasPelicula[0].length === 0) return res.status(400).json({ message: "No se pudo obtener los idiomas de la película" });
-        const actoresPelicula = await pool.query("SELECT id_actor FROM peliculas_actores WHERE id_pelicula = ?", [id_pelicula]);
-        if (actoresPelicula[0].length === 0) return res.status(400).json({ message: "No se pudo obtener los actores de la película" });
-        const directoresPelicula = await pool.query("SELECT id_director FROM peliculas_directores WHERE id_pelicula = ?", [id_pelicula]);
-        if (directoresPelicula[0].length === 0) return res.status(400).json({ message: "No se pudo obtener los directores de la película" });
-        const generosPelicula = await pool.query("SELECT id_genero FROM peliculas_generos WHERE id_pelicula = ?", [id_pelicula]);
-        if (generosPelicula[0].length === 0) return res.status(400).json({ message: "No se pudo obtener los géneros de la película" });
 
-//Debería de ejecutar lo siguiente solamente si se comprueba que existen cambios con los id obtenidos con los id de los arrays
-//Se deberá de refactorizar el código para que no se repita, pero por ahora funciona... 
+        /* Obtenemos de la pelicula */
+        const idiomasPelicula = await pool.query("SELECT id_idioma FROM peliculas_idiomas WHERE id_pelicula = ?", [id_pelicula]);
+        const actoresPelicula = await pool.query("SELECT id_actor FROM peliculas_actores WHERE id_pelicula = ?", [id_pelicula]);
+        const directoresPelicula = await pool.query("SELECT id_director FROM peliculas_directores WHERE id_pelicula = ?", [id_pelicula]);
+        const generosPelicula = await pool.query("SELECT id_genero FROM peliculas_generos WHERE id_pelicula = ?", [id_pelicula]);
+
+        //Debería de ejecutar lo siguiente solamente si se comprueba que existen cambios con los id obtenidos con los id de los arrays
+        //Se deberá de refactorizar el código para que no se repita, pero por ahora funciona... 
 
         //Lo que se elimina////////////////////////
         const idiomasEliminar = idiomasPelicula[0].filter(idioma => !idiomas.includes(idioma.id_idioma));
@@ -320,7 +324,7 @@ export const updatePelicula = async (req, res) => {
 
         res.status(200).json({
             message: "Película actualizada",
-            data:{
+            data: {
                 pelicula: pelicula[0],
             },
             errores
@@ -340,17 +344,17 @@ export const deletePelicula = async (req, res) => {
 
         // Borramos en las relaciones que existen para no dejar basura en la DB
         const idiomas = await pool.query("DELETE FROM peliculas_idiomas WHERE id_pelicula = ?", [id]);
-        if(idiomas[0].affectedRows === 0)logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
+        if (idiomas[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
         const actores = await pool.query("DELETE FROM peliculas_actores WHERE id_pelicula = ?", [id]);
-        if(actores[0].affectedRows === 0)logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
+        if (actores[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
         const directores = await pool.query("DELETE FROM peliculas_directores WHERE id_pelicula = ?", [id]);
-        if(directores[0].affectedRows === 0)logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
+        if (directores[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
         const generos = await pool.query("DELETE FROM peliculas_generos WHERE id_pelicula = ?", [id]);
-        if(generos[0].affectedRows === 0)logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
+        if (generos[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
 
         const deletePelicula = await pool.query("UPDATE peliculas SET status = 0 WHERE id_pelicula = ?", [id]);
         if (deletePelicula[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar la película" });
-        
+
         res.json({ message: "Película eliminada" });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);

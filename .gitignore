@@ -24,3 +24,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+servidor/src/public/image/*
