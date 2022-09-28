@@ -12,13 +12,14 @@ export const signIn = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ message: "Faltan campos" });
 
-        const [user] = await pool.query("SELECT * FROM usuarios WHERE email = ?", [email]);
-        if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
+        /* Consultamos el usuario de la tabla usuario y su rol de la tabla rol_usuarios */
+        const [usuario] = await pool.query("SELECT u.id_usuario, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
+        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
-        const validPassword = await bcrypt.compare(password, user[0].password);
+        const validPassword = await bcrypt.compare(password, usuario[0].password);
         if (!validPassword) return res.status(401).json({ message: "Contraseña incorrecta" });
 
-        const token = jwt.sign({ id: user[0].id_usuario }, JWT_SECRET, {
+        const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre }, JWT_SECRET, {
             expiresIn: 86400 * 2, // 2 days
         });
 
@@ -26,7 +27,7 @@ export const signIn = async (req, res) => {
         res.json({ token });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error interno del servidor" });
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
@@ -50,7 +51,7 @@ export const signUp = async (req, res) => {
         //Tenemos que guardar el usuario anteriormente validado en la db
         const [newUser] = await pool.query("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?) ", [nombre, email, passwordHash]);
 
-        const token = jwt.sign({ id: newUser.insertId }, JWT_SECRET, {
+        const token = jwt.sign({ id: newUser.insertId, rol:"Usuario" }, JWT_SECRET, {
             expiresIn: 86400 * 2, // 2 days
         });
 
@@ -71,10 +72,9 @@ export const signUp = async (req, res) => {
 
 export const verifyToken = async (req, res) => {
     try {
-        const { id } = req.user
+        console.log(req.user);
         res.status(200).json({
             message: "Token valido",
-            id
         })
     }
     catch (error) {
