@@ -1,4 +1,4 @@
-export default function verifyToken(req, res, next) {
+export default function verifyAdminUser(req, res, next) {
     try {
             if (req.user.rol !== "Administrador") return res.status(401).json({ message: 'Sin permisos necesarios' })
             next()

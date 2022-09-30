@@ -14,7 +14,7 @@ export const signIn = async (req, res) => {
 
         /* Consultamos el usuario de la tabla usuario y su rol de la tabla rol_usuarios */
         const [usuario] = await pool.query("SELECT u.id_usuario, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
-        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        if (usuario.length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
         const validPassword = await bcrypt.compare(password, usuario[0].password);
         if (!validPassword) return res.status(401).json({ message: "Contraseña incorrecta" });

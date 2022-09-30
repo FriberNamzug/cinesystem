@@ -16,9 +16,6 @@ export const verifyToken = async (req, res, next) => {
         if (response[0].length === 0) return res.status(404).json({ message: 'El usuario no existe' })
         next()
     } catch (error) {
-        res.status(500).json({
-            message: "Ocurrió un error en el servidor"
-        })
         console.log(`Ocurrió un error en el servidor: ${error})`)
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`)
     }
