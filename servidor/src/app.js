@@ -2,6 +2,7 @@ import express from 'express'
 import morgan from 'morgan'
 import path from 'path'
 import { fileURLToPath } from 'url';
+import cors from 'cors'
 
 
 import usuariosRoutes from './routes/usuarios.routes.js'
@@ -23,6 +24,16 @@ const __dirname = path.dirname(__filename);
 app.use(express.json())
 app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (process.env.CORS_CLIENT.includes(origin)) {
+            callback(null, true)
+        } else {
+            callback(new Error('No permitido por CORS'))
+        }
+    }
+}))
 
 app.use("/usuarios", usuariosRoutes)
 app.use("/auth", authRoutes)
