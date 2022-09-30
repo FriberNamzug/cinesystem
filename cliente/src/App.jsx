@@ -4,7 +4,7 @@ import { ProtectedRouter } from './components/ProtectedRouter'
 
 import Index from './pages/Index'
 import NotFound from './pages/NotFound'
-import Login from './pages/Login'
+import LoginPage from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 
@@ -19,7 +19,7 @@ function App() {
 
         <Route index element={<Index />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<LoginPage />} />
 
         <Route element={<ProtectedRouter />} >
           <Route path="dashboard" element={<Dashboard />} />
