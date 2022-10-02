@@ -4,9 +4,11 @@ import { ProtectedRouter } from './components/ProtectedRouter'
 
 import Index from './pages/Index'
 import NotFound from './pages/NotFound'
-import LoginPage from './pages/LoginPage'
+import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
+
+import ActivarCuenta from './pages/others/ActivarCuenta'
 
 import Toast from './components/Toast'
 
@@ -19,7 +21,11 @@ function App() {
 
         <Route index element={<Index />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/activar-cuenta/:token" element={<ActivarCuenta />} />
+        <Route path="/category/" element={<Index />} />
+
+
 
         <Route element={<ProtectedRouter />} >
           <Route path="dashboard" element={<Dashboard />} />
