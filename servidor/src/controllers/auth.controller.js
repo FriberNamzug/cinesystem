@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import logger from "../config/logger.js";
+import { authenticator } from 'otplib';
+
+import QRCode from 'qrcode';
 import { sendMail, activarCuenta, recuperarPasswordEmail } from "../config/email/index.js";
 
 import {
@@ -15,18 +18,24 @@ export const signIn = async (req, res) => {
         if (!email || !password) return res.status(400).json({ message: "Faltan campos" });
 
         /* Consultamos el usuario de la tabla usuario y su rol de la tabla rol_usuarios */
-        const [usuario] = await pool.query("SELECT u.id_usuario, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
+        const [usuario] = await pool.query("SELECT u.id_usuario, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
         if (usuario.length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
         const validPassword = await bcrypt.compare(password, usuario[0].password);
         if (!validPassword) return res.status(401).json({ message: "Contraseña incorrecta" });
 
-        const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre }, JWT_SECRET, {
-            expiresIn: 86400 * 2, // 2 days
-        });
-
-
-        res.json({ token });
+        //verificamos si el usuario tiene activado el 2FA
+        if (usuario[0].secret_oauth === null) {
+            const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
+                expiresIn: 86400 * 2, // 2 days
+            });
+            res.json({ token, "2fa": false });
+        } else {
+            const token = jwt.sign({ id: usuario[0].id_usuario, rol: null, login: false }, JWT_SECRET, {
+                expiresIn: 60 * 25,// 25 minutes
+            });
+            res.json({ token, "2fa": true });
+        }
 
     } catch (error) {
         res.status(500).json({ message: "Error interno del servidor" });
@@ -42,7 +51,7 @@ export const signUp = async (req, res) => {
         if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
-        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ msg: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
         const user = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 1", [email]);
         if (user[0].length > 0) return res.status(400).json({ message: "El usuario ya se encuentra registrado" });
         const userExistente = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 0", [email]);
@@ -59,7 +68,8 @@ export const signUp = async (req, res) => {
 
         await pool.query("UPDATE usuarios SET token_email = ? WHERE id_usuario = ?", [token, newUser.insertId]);
 
-        const html = activarCuenta(nombre, token);
+        const tokenUrl = token.replace(/\./g, "-");
+        const html = activarCuenta(nombre, tokenUrl);
         sendMail(req, process.env.MAILER_USER, email, "Activar cuenta", html);
 
         res.json({
@@ -82,7 +92,9 @@ export const validateEmail = async (req, res) => {
         const { token } = req.params;
         if (!token) return res.status(400).json({ message: "No se ha enviado el token" });
 
-        const decoded = jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        const tokenUrl = token.replace(/-/g, ".");
+
+        const decoded = jwt.verify(tokenUrl, JWT_SECRET, (err, decoded) => {
             if (err) return false;
             return decoded;
         });
@@ -114,7 +126,8 @@ export const reenviarEmail = async (req, res) => {
         if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
         if (user[0].token_email === null) return res.status(400).json({ message: "El usuario ya ha activado su cuenta" });
 
-        const html = activarCuenta(user[0].nombre, user[0].token_email);
+        const tokenUrl = user[0].token_email.replace(/\./g, "-");
+        const html = activarCuenta(user[0].nombre, tokenUrl);
         sendMail(req, process.env.MAILER_USER, email, "Activar cuenta", html);
 
         res.status(200).json({ message: "Email enviado correctamente" });
@@ -160,7 +173,7 @@ export const cambiarPassword = async (req, res) => {
 
         if (!password) return res.status(400).json({ message: "No se ha enviado la contraseña" });
         if (!token) return res.status(400).json({ message: "No se ha enviado el token" });
-        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ msg: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
 
         const decoded = jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) return false;
@@ -174,7 +187,7 @@ export const cambiarPassword = async (req, res) => {
         const [user] = await pool.query("SELECT id_usuario,token_password FROM usuarios WHERE id_usuario = ? AND status = 1", [decoded.id]);
         if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
         if (user[0].token_password === null) return res.status(400).json({ message: "El usuario ya ha cambiado su contraseña" });
-        if(user[0].token_password !== token) return res.status(400).json({ message: "El token no es válido" });
+        if (user[0].token_password !== token) return res.status(400).json({ message: "El token no es válido" });
 
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt);
@@ -200,5 +213,84 @@ export const verifyToken = async (req, res) => {
     catch (error) {
         res.status(500).json({ message: error.message });
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+    }
+}
+
+
+export const crear2FA = async (req, res) => {
+    try {
+        const { id } = req.user;
+        /* Buscamos al usuario para validar que no tenga un secret_oauth */
+        const [user] = await pool.query("SELECT email, secret_oauth FROM usuarios WHERE id_usuario = ?", [id]);
+        if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
+        if (user[0].secret_oauth !== null) return res.status(400).json({ message: "El usuario ya tiene activado el 2FA" });
+        const secret = authenticator.generateSecret();
+        const url = authenticator.keyuri(user[0].email, process.env.OAUTH_NAME, secret);
+        const qr = await QRCode.toDataURL(url);
+        await pool.query("UPDATE usuarios SET secret_oauth = ? WHERE id_usuario = ?", [secret, id]);
+        res.json({ qr });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+}
+
+
+
+export const eliminar2FA = async (req, res) => {
+    try {
+        const { id } = req.user;
+        /* Verificamos que el usuario tenga un secret_oauth a eliminar */
+        const [user] = await pool.query("SELECT secret_oauth FROM usuarios WHERE id_usuario = ?", [id]);
+        if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
+        if (user[0].secret_oauth === null) return res.status(400).json({ message: "El usuario no tiene activado el 2FA" });
+
+        await pool.query("UPDATE usuarios SET secret_oauth = NULL WHERE id_usuario = ?", [id]);
+        res.json({ message: "Código de seguridad eliminado" });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+}
+
+
+export const verificar2FA = async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        const accessToken = req.headers['x-access-token'] || req.headers['authorization']
+
+        if (!accessToken) return res.status(401).json({ message: 'No tienes autorización para estar aquí' })
+
+        const jwtCode = accessToken.split(' ')[1]
+
+        const verify = jwt.verify(jwtCode, process.env.JWT_SECRET, (err, user) => {
+            if (err) return false
+            return user
+        })
+        console.log(verify);
+        if (!verify) return res.status(401).json({ message: 'No tienes autorización para estar aquí' })
+
+
+        const [usuario] = await pool.query("SELECT u.id_usuario, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE id_usuario = ? AND u.status = 1", [verify.id]);
+
+        if (usuario[0].secret_oauth === null) return res.status(400).json({ message: "No se ha creado el código de seguridad" });
+
+        const verified = authenticator.verify({ token, secret: usuario[0].secret_oauth });
+
+        if (verified) {
+            const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
+                expiresIn: 86400 * 2, // 2 days
+            });
+            return res.json({ message: "Codigo correcto", token, "2fa": true });
+        } else {
+            return res.status(400).json({ message: "Código incorrecto" });
+        }
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        return res.status(500).json({ message: "Error interno del servidor" });
     }
 }

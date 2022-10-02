@@ -11,6 +11,7 @@ router.put("/u/", verifyToken, usuarios.updateUsuario);
 router.delete("/u/", verifyToken, usuarios.deleteUsuario);
 
 
+
 /* Administrador */
 router.get("/a/", verifyToken, verifyAdminUser, usuarios.getUsuariosA);
 router.get("/a/:id", verifyToken, verifyAdminUser, usuarios.getUsuarioA);

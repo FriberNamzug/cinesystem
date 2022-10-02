@@ -10,6 +10,7 @@ export const verifyToken = async (req, res, next) => {
         const token = accessToken.split(' ')[1]
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
             if (err) return res.status(401).json({ message: 'El token de acceso no es válido' })
+            if (!user.login) return res.status(401).json({ message: 'El login no es válido' })
             req.user = user
         })
         const response = await pool.query("SELECT id_usuario FROM usuarios WHERE id_usuario = ? AND status = 1", [req.user.id])

@@ -3,6 +3,7 @@ import morgan from 'morgan'
 import path from 'path'
 import { fileURLToPath } from 'url';
 import cors from 'cors'
+import cron from 'node-cron'
 
 
 import usuariosRoutes from './routes/usuarios.routes.js'
@@ -13,6 +14,8 @@ import directoresRoutes from './routes/directores.routes.js'
 import actoresRoutes from './routes/actores.routes.js'
 import idiomasRoutes from './routes/idiomas.routes.js'
 import uploadsRoutes from './routes/uploads.routes.js'
+
+import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
 
 const app = express()
@@ -25,15 +28,9 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
 
-/* app.use(cors({
-    origin: (origin, callback) => {
-        if (process.env.CORS_CLIENT.includes(origin)) {
-            callback(null, true)
-        } else {
-            callback(new Error('No permitido por CORS'))
-        }
-    }
-})) */
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://192.168.100.40:3000']
+}))
 
 app.use("/usuarios", usuariosRoutes)
 app.use("/auth", authRoutes)
@@ -44,9 +41,11 @@ app.use("/actores", actoresRoutes)
 app.use("/idiomas", idiomasRoutes)
 app.use("/uploads", uploadsRoutes)
 
-setInterval(() => {
-    console.log("Han pasado 25 minutos")
-}, 1000*60*25) // 25 minutos 
+/* Ejecutamos un cron schedule cada 25 minutos */
+cron.schedule('*/25 * * * *', () => {
+    console.log('Limpiando usuarios - ejecucion cada 25 minutos');
+    cleanUsers()
+});
 
 
 
