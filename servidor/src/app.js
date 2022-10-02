@@ -25,7 +25,7 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
 
-app.use(cors({
+/* app.use(cors({
     origin: (origin, callback) => {
         if (process.env.CORS_CLIENT.includes(origin)) {
             callback(null, true)
@@ -33,7 +33,7 @@ app.use(cors({
             callback(new Error('No permitido por CORS'))
         }
     }
-}))
+})) */
 
 app.use("/usuarios", usuariosRoutes)
 app.use("/auth", authRoutes)
@@ -43,6 +43,11 @@ app.use("/directores", directoresRoutes)
 app.use("/actores", actoresRoutes)
 app.use("/idiomas", idiomasRoutes)
 app.use("/uploads", uploadsRoutes)
+
+setInterval(() => {
+    console.log("Han pasado 25 minutos")
+}, 1000*60*25) // 25 minutos 
+
 
 
 app.use((req, res) => {
