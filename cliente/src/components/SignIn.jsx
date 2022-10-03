@@ -1,6 +1,5 @@
 import React, { useState, useRef, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-//import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { login } from '../services/auth.js'
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import PasswordIcon from "@mui/icons-material/Password";
@@ -21,9 +20,7 @@ import {
 import { toast } from 'react-toastify'
 export default function SignIn() {
 
-    //const KEY_CAPTCHA = import.meta.env.VITE_HCAPTCHA_KEY;
 
-    const [token, setToken] = useState("");
     const [dataUsuario, setDataUsuario] = useState({
         email: "",
         password: "",
@@ -31,7 +28,6 @@ export default function SignIn() {
     });
     const [loading, setLoading] = useState(false);
 
-    //const captchaRef = useRef(null);
 
 
     const navigate = useNavigate();
@@ -42,17 +38,20 @@ export default function SignIn() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        //if (!token) return toast.error("Por favor verifica el captcha");
         setLoading(true);
         try {
             const response = await login(dataUsuario.email, dataUsuario.password);
-            toast.success("Bienvenido");
-            console.log(response);
-            window.localStorage.setItem("usuario", "Test");
-            navigate("/dashboard");
+            console.log(response.data);
+            window.localStorage.setItem("token", response.data.token);
+            if (response.data.twofa === true) {
+                toast.success("Verifica tu aplicacion de autenticacion");
+                navigate("/2fa");
+            } else {
+                toast.success("Bienvenido");
+                navigate("/dashboard");
+            }
             setLoading(false);
         } catch (error) {
-            setToken("");
             setLoading(false);
             toast.error(error.response.data.message || error.message);
             captchaRef.current.resetCaptcha();
@@ -106,7 +105,6 @@ export default function SignIn() {
                             type={dataUsuario.showPassword ? "text" : "password"}
                             name="password"
                             size="medium"
-                            margin="normal"
                             onChange={handleChange}
                             fullWidth
                             required

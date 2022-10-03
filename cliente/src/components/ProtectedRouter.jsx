@@ -1,9 +1,40 @@
 import { Navigate, Outlet } from "react-router-dom"
-export const ProtectedRouter = ({ children, redirectTo = "/" }) => {
+import axios from 'axios';
 
-    const usuario = window.localStorage.getItem("usuario");
+import { useState } from "react";
 
-    if (!usuario) return <Navigate to={redirectTo} />
+import { verificarToken } from "../services/auth";
 
-    return children ? children : <Outlet />
+import { toast } from 'react-toastify';
+
+
+
+export const ProtectedRouter = ({ permisos, redirectTo = "/" }) => {
+
+    try {
+        const token = localStorage.getItem("token")
+        const [permiso, setPermiso] = useState(null)
+
+        if (!token) return <Navigate to={redirectTo} />
+
+        verificarToken(token).catch(err => {
+            toast.error(err.response.data.message || err.message)
+            localStorage.removeItem("token")
+            return <Navigate to={redirectTo} />
+        }).then(res => {
+            setPermiso(res.data.permiso)
+            console.log(res)
+        })
+
+        if (permisos.includes(permiso)) {
+            console.log("Tiene permiso")
+        }
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        return <Outlet />
+
+
+    } catch (error) {
+        console.log(error)
+        toast.error("Ocurrió un error. Intente nuevamente");
+    }
 }

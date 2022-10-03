@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import NavbarPage from '../components/NavbarPage'
-import Card from '../components/Card'
+import NavbarPage from '../../components/NavbarPage'
+import Card from '../../components/Card'
 
-import bgPage from '../assets/bg-page.jpg'
+import bgPage from '../../assets/bg-page.jpg'
 
 export default function Index() {
     const [generos, setGeneros] = useState([{

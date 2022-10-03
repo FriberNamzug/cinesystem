@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SignIn from "../components/SignIn";
-import SignUp from "../components/SignUp";
+import SignIn from "../../components/SignIn";
+import SignUp from "../../components/SignUp";
 
 import { Modal, Button } from "@mui/material";
 
-import bgLogin from "../assets/bg-login.jpg";
+import bgLogin from "../../assets/bg-login.jpg";
 
 import Close from "@mui/icons-material/Close";
 import ReplyIcon from '@mui/icons-material/Reply';
