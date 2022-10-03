@@ -29,12 +29,12 @@ export const signIn = async (req, res) => {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
                 expiresIn: 86400 * 2, // 2 days
             });
-            res.json({ token, "2fa": false });
+            res.json({ token, "twofa": false });
         } else {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: null, login: false }, JWT_SECRET, {
                 expiresIn: 60 * 25,// 25 minutes
             });
-            res.json({ token, "2fa": true });
+            res.json({ token, "twofa": true });
         }
 
     } catch (error) {
@@ -284,7 +284,7 @@ export const verificar2FA = async (req, res) => {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
                 expiresIn: 86400 * 2, // 2 days
             });
-            return res.json({ message: "Codigo correcto", token, "2fa": true });
+            return res.json({ message: "Codigo correcto", token, twofa: true });
         } else {
             return res.status(400).json({ message: "Código incorrecto" });
         }
