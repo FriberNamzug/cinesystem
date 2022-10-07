@@ -1,10 +1,14 @@
-import React, { useState, useRef, Fragment } from "react";
+import { useState, Fragment } from "react";
+
 import { useNavigate } from "react-router-dom";
-import { login } from '../services/auth.js'
+
+import { register } from '../../services/auth.js'
+
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import PasswordIcon from "@mui/icons-material/Password";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import BadgeIcon from '@mui/icons-material/Badge';
 
 import {
     LinearProgress,
@@ -18,7 +22,8 @@ import {
 } from "@mui/material";
 
 import { toast } from 'react-toastify'
-export default function SignIn() {
+
+export default function SignUp({ close = null }) {
 
 
     const [dataUsuario, setDataUsuario] = useState({
@@ -30,8 +35,6 @@ export default function SignIn() {
 
 
 
-    const navigate = useNavigate();
-
     const handleChange = (e) => {
         setDataUsuario({ ...dataUsuario, [e.target.name]: e.target.value });
     };
@@ -40,19 +43,14 @@ export default function SignIn() {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await login(dataUsuario.email, dataUsuario.password);
-            console.log(response.data);
-            window.localStorage.setItem("token", response.data.token);
-            if (response.data.twofa === true) {
-                toast.success("Verifica tu aplicacion de autenticacion");
-                navigate("/2fa");
-            } else {
-                toast.success("Bienvenido");
-                navigate("/dashboard");
-            }
+            const response = await register(dataUsuario.nombre, dataUsuario.email, dataUsuario.password);
+            console.log(response);
+            toast.info(response.data.message, { autoClose: 10000 });
+            close();
             setLoading(false);
         } catch (error) {
             setLoading(false);
+            console.log(error);
             toast.error(error.response.data.message || error.message);
         }
     };
@@ -67,7 +65,6 @@ export default function SignIn() {
     const handleMouseDownPassword = (event) => {
         event.preventDefault();
     };
-
     return (
         <Fragment>
             <form onSubmit={handleSubmit}>
@@ -95,7 +92,28 @@ export default function SignIn() {
                 </div>
 
                 <div className="m-1">
-                    <FormControl variant="outlined" margin="normal" className="w-full">
+                    <TextField
+                        label="Nombre"
+                        type="text"
+                        name="nombre"
+                        onChange={handleChange}
+                        size="medium"
+                        variant="outlined"
+                        margin="normal"
+                        fullWidth
+                        required
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <BadgeIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                </div>
+
+                <div className="m-1">
+                    <FormControl variant="outlined" margin="normal" required className="w-full">
                         <InputLabel htmlFor="outlined-adornment-password">
                             Contraseña
                         </InputLabel>
@@ -106,7 +124,6 @@ export default function SignIn() {
                             size="medium"
                             onChange={handleChange}
                             fullWidth
-                            required
                             startAdornment={
                                 <InputAdornment position="start">
                                     <PasswordIcon />
@@ -131,14 +148,6 @@ export default function SignIn() {
                     </FormControl>
                 </div>
 
-                {/* <HCaptcha
-                    ref={captchaRef}
-                    sitekey={KEY_CAPTCHA}
-                    onVerify={(token, ekey) => setToken(token)}
-                    onExpire={(e) => setToken("")}
-                    onError={(e) => console.log(e)}
-                /> */}
-
                 <div className="m-2">
                     <Button
                         type="submit"
@@ -147,7 +156,7 @@ export default function SignIn() {
                         size="large"
                         disabled={loading}
                         fullWidth>
-                        Iniciar Sesión
+                        Registrarse
                     </Button>
                 </div>
 

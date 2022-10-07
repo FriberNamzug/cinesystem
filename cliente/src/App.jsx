@@ -7,6 +7,7 @@ import NotFound from './pages/public/NotFound'
 import Login from './pages/global/Login'
 import Auth2FA from './pages/global/Auth2FA'
 import ActivarCuenta from './pages/global/ActivarCuenta'
+import RecuperarPassword from './pages/global/RecuperarPassword'
 
 import Dashboard from './pages/admin/Dashboard'
 import Admin from './pages/admin/Admin'
@@ -35,6 +36,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/activar-cuenta/:token" element={<ActivarCuenta />} />
         <Route path="/2fa" element={<Auth2FA />} />
+        <Route path="/recuperar_password/:token" element={<RecuperarPassword />} />
 
 
         <Route element={<ProtectedRouter permisos={["Administrador"]} />} >

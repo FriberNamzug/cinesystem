@@ -15,6 +15,19 @@ export const register = (nombre, email, password) => {
     });
 }
 
+
+export const recuperarPassword = (email) => {
+    return axios.get(`/auth/recuperar/${email}`);
+}
+
+export const cambiarPasswordConToken = (token, password) => {
+    return axios.post(`/auth/recuperar/${token}`, {
+        password
+    });
+}
+
+
+///Verificaciones
 export const activarCuenta = (token) => {
     return axios.get(`/auth/activar-cuenta/${token}`);
 }
@@ -39,3 +52,4 @@ export const validar2FA = (token, codigo) => {
         }
     });
 }
+

@@ -1,7 +1,7 @@
 import { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SignIn from "../../components/SignIn";
-import SignUp from "../../components/SignUp";
+import SignIn from "../../components/login/SignIn";
+import SignUp from "../../components/login/SignUp";
 
 import { Modal, Button } from "@mui/material";
 
