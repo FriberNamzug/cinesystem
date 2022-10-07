@@ -14,9 +14,9 @@ import {
 import ReplyIcon from '@mui/icons-material/Reply';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
-import bgLogin from "../assets/bg-login.jpg";
+import bgLogin from "../../assets/bg-login.jpg";
 
-import { validar2FA } from '../services/auth';
+import { validar2FA } from '../../services/auth';
 
 import { toast } from 'react-toastify';
 import { IMaskInput } from 'react-imask';

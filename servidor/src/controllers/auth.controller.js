@@ -68,8 +68,7 @@ export const signUp = async (req, res) => {
 
         await pool.query("UPDATE usuarios SET token_email = ? WHERE id_usuario = ?", [token, newUser.insertId]);
 
-        const tokenUrl = token.replace(/\./g, "-");
-        const html = activarCuenta(nombre, tokenUrl);
+        const html = activarCuenta(nombre, token);
         sendMail(req, process.env.MAILER_USER, email, "Activar cuenta", html);
 
         res.json({
@@ -92,10 +91,9 @@ export const validateEmail = async (req, res) => {
         const { token } = req.params;
         if (!token) return res.status(400).json({ message: "No se ha enviado el token" });
 
-        const tokenUrl = token.replace(/-/g, ".");
 
-        const decoded = jwt.verify(tokenUrl, JWT_SECRET, (err, decoded) => {
-            if (err) return false;
+        const decoded = jwt.verify(token, JWT_SECRET, (err, decoded) => {
+            if (err) return false
             return decoded;
         });
 

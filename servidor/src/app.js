@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://192.168.100.40:3000']
+    origin: ['http://localhost:3000', 'http://192.168.100.40:3000','http://192.168.100.8:3000']
 }))
 
 app.use("/usuarios", usuariosRoutes)

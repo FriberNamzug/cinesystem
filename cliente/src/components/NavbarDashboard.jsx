@@ -4,10 +4,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Collapse } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
-import CategoryIcon from "@mui/icons-material/Category";
-import SegmentIcon from '@mui/icons-material/Segment';
+import MovieIcon from '@mui/icons-material/Movie';
+import SlideshowIcon from '@mui/icons-material/Slideshow';
+import PeopleIcon from '@mui/icons-material/People';
+
 import SettingsIcon from '@mui/icons-material/Settings';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import HomeIcon from "@mui/icons-material/Home";
 
@@ -19,9 +20,9 @@ export default function NavbarDashboard() {
     const navigate = useNavigate();
 
     const style = {
-        activate: "block py-2 pr-4 pl-3 text-white bg-gray-700 rounded-lg",
-        disable:
-            "block py-2 pr-4 pl-3 text-white hover:text-gray-200 hover:bg-gray-700 rounded-lg "
+        activate: "block py-2 pr-4 pl-3 text-white bg-gray-700 rounded-lg duration-200",
+        disable: "block py-2 pr-4 pl-3 text-white hover:text-gray-200 hover:bg-gray-700 rounded-lg duration-200",
+        home: "block py-2 pr-4 pl-3 text-white hover:text-gray-200 hover:bg-gray-700 rounded-lg animate-pulse",
     };
 
     const handleSignOut = () => {
@@ -43,53 +44,46 @@ export default function NavbarDashboard() {
                     <li className="my-2">
                         <NavLink
                             to="./"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            className={style.home}
                         >
                             <span className="">Inicio</span>
                         </NavLink>
                     </li>
 
+
+
                     <li className="my-2">
                         <NavLink
-                            to="./categorias"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./peliculas"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <span className="">Categorias</span>
+                            <span className="">Peliculas</span>
                         </NavLink>
                     </li>
 
                     <li className="my-2">
                         <NavLink
-                            to="./subcategorias"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./funciones"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <span className="">Subcategorias</span>
+                            <span className="">Funciones</span>
                         </NavLink>
                     </li>
 
                     <li className="my-2">
                         <NavLink
-                            to="./productos"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./usuarios"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <span className="">Productos</span>
+                            <span className="">Usuarios</span>
                         </NavLink>
                     </li>
+
 
                     <li className="my-2">
                         <NavLink
                             to="./settings"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
                             <span className="">Configuración</span>
                         </NavLink>
@@ -106,7 +100,7 @@ export default function NavbarDashboard() {
     const ListaIcons = () => {
         return (
 
-            <ul className="flex flex-col justify-between h-screen items-center p-2">
+            <ul className="flex flex-col justify-between h-screen items-center p-1">
                 <div>
                     <li className="flex justify-center items-center mb-3">
                         <div className="flex justify-center p-2">
@@ -117,9 +111,7 @@ export default function NavbarDashboard() {
                     <li className="my-2">
                         <NavLink
                             to="./"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            className={style.home}
                         >
                             <HomeIcon />
                         </NavLink>
@@ -127,43 +119,35 @@ export default function NavbarDashboard() {
 
                     <li className="my-2">
                         <NavLink
-                            to="./categorias"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./peliculas"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <CategoryIcon />
+                            <MovieIcon />
                         </NavLink>
                     </li>
 
                     <li className="my-2">
                         <NavLink
-                            to="./subcategorias"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./funciones"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <SegmentIcon />
+                            <SlideshowIcon />
                         </NavLink>
                     </li>
 
                     <li className="my-2">
                         <NavLink
-                            to="./productos"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            to="./usuarios"
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
-                            <InventoryIcon />
+                            <PeopleIcon />
                         </NavLink>
                     </li>
 
                     <li className="my-2">
                         <NavLink
                             to="./settings"
-                            className={({ isActive }) =>
-                                isActive ? style.activate : style.disable
-                            }
+                            className={({ isActive }) => isActive ? style.activate : style.disable}
                         >
                             <SettingsIcon />
                         </NavLink>

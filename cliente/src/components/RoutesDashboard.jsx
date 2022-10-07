@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import NavbarDashboard from "./NavbarAdmin";
+import NavbarDashboard from "./NavbarDashboard";
 
 const RoutesDashboard = () => {
     return (

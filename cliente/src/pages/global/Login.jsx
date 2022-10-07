@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SignIn from "../../components/SignIn";
 import SignUp from "../../components/SignUp";
@@ -11,14 +11,22 @@ import Close from "@mui/icons-material/Close";
 import ReplyIcon from '@mui/icons-material/Reply';
 
 export default function Login() {
-
-
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    //Comprobar si el usuario ya esta logueado
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+
+  }, [navigate]);
 
   const handleOpen = () => setOpen(!open);
 
   const handleBack = () => navigate(-1);
+
+  
 
   return (
     <div>

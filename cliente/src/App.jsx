@@ -4,12 +4,18 @@ import { ProtectedRouter } from './components/ProtectedRouter'
 
 import Index from './pages/public/Index'
 import NotFound from './pages/public/NotFound'
-import Login from './pages/public/Login'
+import Login from './pages/global/Login'
+import Auth2FA from './pages/global/Auth2FA'
+import ActivarCuenta from './pages/global/ActivarCuenta'
+
 import Dashboard from './pages/admin/Dashboard'
 import Admin from './pages/admin/Admin'
-import Auth2FA from './pages/Auth2FA'
+import Configuracion from './pages/admin/Configuracion'
+import Usuarios from './pages/admin/Usuarios'
+import Funciones from './pages/admin/Funciones'
+import Peliculas from './pages/admin/Peliculas'
 
-import ActivarCuenta from './pages/public/ActivarCuenta'
+
 
 import Toast from './components/Toast'
 import RoutesDashboard from './components/RoutesDashboard'
@@ -17,31 +23,32 @@ import RoutesDashboard from './components/RoutesDashboard'
 
 function App() {
 
-  const [usuario, setUsuario] = useState(null)
   return (
     <Fragment>
       <Routes>
 
         <Route index element={<Index />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/activar-cuenta/:token" element={<ActivarCuenta />} />
-        <Route path="/2fa" element={<Auth2FA />} />
         <Route path="/category/" element={<Index />} />
 
 
+        <Route path="/login" element={<Login />} />
+        <Route path="/activar-cuenta/:token" element={<ActivarCuenta />} />
+        <Route path="/2fa" element={<Auth2FA />} />
 
-        {/* Rutas que solo puedes ingresar despues de hacer login */}
-        <Route element={<ProtectedRouter permisos={["Usuario"]} />} >
+
+        <Route element={<ProtectedRouter permisos={["Administrador"]} />} >
           <Route path="dashboard" element={<RoutesDashboard />}>
             <Route index element={<Dashboard />} />
-            <Route index element={<Dashboard />} />
+            <Route path="admin" element={<Admin />} />
+            <Route path="settings" element={<Configuracion />} />
+            <Route path="usuarios" element={<Usuarios />} />
+            <Route path="peliculas" element={<Peliculas />} />
+            <Route path="funciones" element={<Funciones />} />
           </Route>
         </Route>
 
-        {/* Rutas que necesitan permiso de administrador */}
-        <Route element={<ProtectedRouter permisos={["Administrador"]} />} >
-          <Route path="admin" element={<Admin />} />
+        <Route element={<ProtectedRouter permisos={["Usuario"]} />} >
         </Route>
 
 

@@ -54,7 +54,6 @@ export default function SignIn() {
         } catch (error) {
             setLoading(false);
             toast.error(error.response.data.message || error.message);
-            captchaRef.current.resetCaptcha();
         }
     };
 
