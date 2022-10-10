@@ -16,6 +16,7 @@ import {
     Button,
     InputAdornment,
     FormControl,
+    FormHelperText,
     InputLabel,
     OutlinedInput,
     IconButton,
@@ -23,24 +24,33 @@ import {
 
 import { toast } from 'react-toastify'
 
+import { validarNuevoRegistro, error as err } from '../../validations/login'
+
+
 export default function SignUp({ close = null }) {
 
 
     const [dataUsuario, setDataUsuario] = useState({
+        nombre: "",
         email: "",
         password: "",
         showPassword: false,
     });
     const [loading, setLoading] = useState(false);
 
+    const [error, setError] = useState(err);
+
+
 
 
     const handleChange = (e) => {
         setDataUsuario({ ...dataUsuario, [e.target.name]: e.target.value });
+        setError({ ...error, [e.target.name]: validarNuevoRegistro(e) });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (error.nombre.error || error.email.error || error.password.error) return toast.error('Soluciona los errores en el formulario');
         setLoading(true);
         try {
             const response = await register(dataUsuario.nombre, dataUsuario.email, dataUsuario.password);
@@ -73,6 +83,9 @@ export default function SignUp({ close = null }) {
                         label="Email"
                         type="email"
                         name="email"
+                        helperText={error.email.message}
+                        error={error.email.error}
+                        disabled={loading}
                         onChange={handleChange}
                         size="medium"
                         variant="outlined"
@@ -96,6 +109,9 @@ export default function SignUp({ close = null }) {
                         label="Nombre"
                         type="text"
                         name="nombre"
+                        helperText={error.nombre.message}
+                        error={error.nombre.error}
+                        disabled={loading}
                         onChange={handleChange}
                         size="medium"
                         variant="outlined"
@@ -113,7 +129,13 @@ export default function SignUp({ close = null }) {
                 </div>
 
                 <div className="m-1">
-                    <FormControl variant="outlined" margin="normal" required className="w-full">
+                    <FormControl
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        disabled={loading}
+                        error={error.password.error}
+                        className="w-full">
                         <InputLabel htmlFor="outlined-adornment-password">
                             Contraseña
                         </InputLabel>
@@ -145,6 +167,7 @@ export default function SignUp({ close = null }) {
                                 </InputAdornment>
                             }
                         />
+                        <FormHelperText>{error.password.message}</FormHelperText>
                     </FormControl>
                 </div>
 

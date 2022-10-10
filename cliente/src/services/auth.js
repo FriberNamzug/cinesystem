@@ -40,6 +40,25 @@ export const verificarToken = async (token) => {
     });
 }
 
+
+// 2 F A
+
+export const crear2FA = async (token) => {
+    return await axios.post(`/auth/2fa/crear`, {}, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export const eliminar2FA = async (token) => {
+    return await axios.post(`/auth/2fa/eliminar`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
 export const validar2FA = (token, codigo) => {
     console.log(token.toString());
     console.log(codigo.toString());
@@ -52,4 +71,6 @@ export const validar2FA = (token, codigo) => {
         }
     });
 }
+
+
 
