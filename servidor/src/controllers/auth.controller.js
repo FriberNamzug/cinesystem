@@ -48,10 +48,17 @@ export const signUp = async (req, res) => {
         const { nombre, email, password } = req.body;
         //Validaciones de los datos que se traen
         if (!nombre || !email || !password) return res.status(400).json({ message: "Por favor, ingrese todos los campos" });
-        if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
+        if (!/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(email)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
-        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if(!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+        if(!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
+        if(!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
+        if(!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
+        if(!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
+        if(/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
+        if(/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
+
         const user = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 1", [email]);
         if (user[0].length > 0) return res.status(400).json({ message: "El usuario ya se encuentra registrado" });
         const userExistente = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 0", [email]);
@@ -171,7 +178,13 @@ export const cambiarPassword = async (req, res) => {
 
         if (!password) return res.status(400).json({ message: "No se ha enviado la contraseña" });
         if (!token) return res.status(400).json({ message: "No se ha enviado el token" });
-        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if(!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+        if(!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
+        if(!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
+        if(!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
+        if(!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
+        if(/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
+        if(/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
 
         const decoded = jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) return false;
@@ -245,7 +258,7 @@ export const eliminar2FA = async (req, res) => {
         if (user[0].secret_oauth === null) return res.status(400).json({ message: "El usuario no tiene activado el 2FA" });
 
         await pool.query("UPDATE usuarios SET secret_oauth = NULL WHERE id_usuario = ?", [id]);
-        res.json({ message: "Código de seguridad eliminado" });
+        res.status(200).json({ message: "Código de seguridad eliminado" });
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
