@@ -17,10 +17,13 @@ import uploadsRoutes from './routes/uploads.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
+import startWhatsapp from './config/whatsapp.js'
+
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 
 
 
@@ -29,7 +32,7 @@ app.use(express.static(path.join(__dirname, './public')))
 app.use(morgan('dev'))
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://192.168.100.40:3000','http://192.168.100.8:3000']
+    origin: ['http://localhost:3000', 'http://192.168.100.40:3000', 'http://192.168.100.8:3000']
 }))
 
 app.use("/usuarios", usuariosRoutes)
@@ -46,6 +49,10 @@ cron.schedule('*/25 * * * *', () => {
     console.log('Limpiando usuarios - ejecucion cada 25 minutos');
     cleanUsers()
 });
+
+// Iniciamos el cliente de whatsapp
+startWhatsapp()
+
 
 
 

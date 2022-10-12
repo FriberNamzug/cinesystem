@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import logger from "../config/logger.js";
 import { authenticator } from 'otplib';
+import { sendWhatsappMessage } from "../config/whatsapp.js";
 
 import QRCode from 'qrcode';
 import { sendMail, activarCuenta, recuperarPasswordEmail } from "../config/email/index.js";
@@ -29,7 +30,9 @@ export const signIn = async (req, res) => {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
                 expiresIn: 86400 * 2, // 2 days
             });
-            res.json({ token, "twofa": false });
+            const dataMessage = await sendWhatsappMessage("+5214494661233", `Hola ${usuario[0].nombre}, se ha iniciado sesión en tu cuenta`);
+            console.log(dataMessage);
+            return res.json({ token, "twofa": false });
         } else {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: null, login: false }, JWT_SECRET, {
                 expiresIn: 60 * 25,// 25 minutes
@@ -51,13 +54,13 @@ export const signUp = async (req, res) => {
         if (!/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(email)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
-        if(!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
-        if(!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
-        if(!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
-        if(!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
-        if(!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
-        if(/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
-        if(/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
+        if (!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+        if (!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
+        if (!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
+        if (!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
+        if (!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
+        if (/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
+        if (/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
 
         const user = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 1", [email]);
         if (user[0].length > 0) return res.status(400).json({ message: "El usuario ya se encuentra registrado" });
@@ -178,13 +181,13 @@ export const cambiarPassword = async (req, res) => {
 
         if (!password) return res.status(400).json({ message: "No se ha enviado la contraseña" });
         if (!token) return res.status(400).json({ message: "No se ha enviado el token" });
-        if(!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
-        if(!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
-        if(!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
-        if(!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
-        if(!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
-        if(/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
-        if(/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
+        if (!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+        if (!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
+        if (!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
+        if (!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
+        if (!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
+        if (/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
+        if (/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
 
         const decoded = jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) return false;
