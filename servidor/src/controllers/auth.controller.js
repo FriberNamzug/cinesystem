@@ -19,7 +19,7 @@ export const signIn = async (req, res) => {
         if (!email || !password) return res.status(400).json({ message: "Faltan campos" });
 
         /* Consultamos el usuario de la tabla usuario y su rol de la tabla rol_usuarios */
-        const [usuario] = await pool.query("SELECT u.id_usuario, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
+        const [usuario] = await pool.query("SELECT u.id_usuario, u.telefono, u.notificaciones, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE email = ? AND u.status = 1", [email]);
         if (usuario.length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
         const validPassword = await bcrypt.compare(password, usuario[0].password);
@@ -30,8 +30,12 @@ export const signIn = async (req, res) => {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
                 expiresIn: 86400 * 2, // 2 days
             });
-            const dataMessage = await sendWhatsappMessage("+5214494661233", `Hola ${usuario[0].nombre}, se ha iniciado sesión en tu cuenta`);
-            console.log(dataMessage);
+
+            if (usuario[0].notificaciones === 1) {
+                const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
+                sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+            }
+
             return res.json({ token, "twofa": false });
         } else {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: null, login: false }, JWT_SECRET, {
@@ -45,6 +49,7 @@ export const signIn = async (req, res) => {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
+
 
 export const signUp = async (req, res) => {
     try {
@@ -96,6 +101,7 @@ export const signUp = async (req, res) => {
     }
 }
 
+
 export const validateEmail = async (req, res) => {
     try {
         const { token } = req.params;
@@ -125,6 +131,7 @@ export const validateEmail = async (req, res) => {
     }
 }
 
+
 export const reenviarEmail = async (req, res) => {
     try {
         const { email } = req.params;
@@ -145,6 +152,7 @@ export const reenviarEmail = async (req, res) => {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
+
 
 export const recuperarPassword = async (req, res) => {
     try {
@@ -172,6 +180,7 @@ export const recuperarPassword = async (req, res) => {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
+
 
 export const cambiarPassword = async (req, res) => {
     try {
@@ -216,6 +225,7 @@ export const cambiarPassword = async (req, res) => {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 }
+
 
 export const verifyToken = async (req, res) => {
     try {
@@ -288,7 +298,7 @@ export const verificar2FA = async (req, res) => {
         if (!verify) return res.status(401).json({ message: 'No tienes autorización para estar aquí' })
 
 
-        const [usuario] = await pool.query("SELECT u.id_usuario, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE id_usuario = ? AND u.status = 1", [verify.id]);
+        const [usuario] = await pool.query("SELECT u.id_usuario,u.notificaciones,u.telefono, u.secret_oauth, u.email, u.password, u.id_rol, r.nombre FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE id_usuario = ? AND u.status = 1", [verify.id]);
 
         if (usuario[0].secret_oauth === null) return res.status(400).json({ message: "No se ha creado el código de seguridad" });
 
@@ -298,6 +308,12 @@ export const verificar2FA = async (req, res) => {
             const token = jwt.sign({ id: usuario[0].id_usuario, rol: usuario[0].nombre, login: true }, JWT_SECRET, {
                 expiresIn: 86400 * 2, // 2 days
             });
+
+            if (usuario[0].notificaciones === 1) {
+                const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
+                sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+            }
+
             return res.json({ message: "Codigo correcto", token, twofa: true });
         } else {
             return res.status(400).json({ message: "Código incorrecto" });

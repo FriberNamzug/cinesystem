@@ -5,13 +5,14 @@ import bcrypt from "bcryptjs";
 export const getUsuario = async (req, res) => {
     try {
         const { id } = req.user;
-        const response = await pool.query("SELECT nombre, email FROM usuarios WHERE id_usuario = ?", [id]);
+        const response = await pool.query("SELECT nombre, email, notificaciones, telefono FROM usuarios WHERE id_usuario = ?", [id]);
         res.status(200).json(response[0]);
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error interno del servidor" });
     }
 }
+
 export const updateUsuario = async (req, res) => {
     try {
         const { id } = req.user;
@@ -66,6 +67,33 @@ export const deleteUsuario = async (req, res) => {
         res.status(500).json({ message: "Error interno del servidor" });
     }
 }
+
+export const updateNotificaciones = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { notificaciones } = req.body;
+
+        if (notificaciones === undefined) return res.status(400).json({ message: "Faltan campos" });
+        if (notificaciones !== 0 && notificaciones !== 1) return res.status(400).json({ message: "El valor de notificaciones no es válido" });
+
+        const usuario = await pool.query("SELECT id_usuario, notificaciones, telefono FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
+        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        if (usuario[0][0].notificaciones === notificaciones) return res.status(400).json({ message: "No hay cambios" });
+        if (notificaciones === 1 && !usuario[0][0].telefono) return res.status(400).json({ message: "No se puede activar las notificaciones sin un número de teléfono" });
+
+        await pool.query("UPDATE usuarios SET notificaciones = ? WHERE id_usuario = ?", [notificaciones, id]);
+
+        res.json({
+            message: "Notificaciones actualizadas",
+            notificaciones: notificaciones
+        });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+}
+
 
 /* Funciones de administrador */
 

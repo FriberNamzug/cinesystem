@@ -31,14 +31,15 @@ clientWhatsapp.on('disconnected', (reason) => {
 export const sendWhatsappMessage = async (numero, mensaje) => {
     //Comprobamos que el numero tenga el formato correcto de "+5214494661233"
     if (numero.length === 13 && numero.substring(0, 3) === "+52") return { error: "El numero no tiene el formato correcto" }
-    
+
     const chatId = numero.substring(1) + "@c.us";
+
     clientWhatsapp.isRegisteredUser(chatId).then(isRegistered => {
         if (isRegistered) {
             clientWhatsapp.sendMessage(chatId, mensaje);
-            return { error: false, mensaje: 'Mensaje enviado' }
+            console.log("Mensaje enviado a: " + numero);
         } else {
-            return { error: true, mensaje: 'El numero no esta registrado en whatsapp' }
+            console.log("El numero no esta registrado en whatsapp: " + numero);
         }
     }).catch(err => {
         logger.error(err)
