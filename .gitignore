@@ -26,4 +26,4 @@ dist-ssr
 *.sw?
 
 servidor/src/public/image/*
-servidor/.wwebjs_auth
+servidor/.wwebjs_auth/*
