@@ -3,12 +3,15 @@ import { useState } from 'react'
 import Password from '../../components/configuracion/Password';
 import Autenticacion from '../../components/configuracion/Autenticacion';
 import Usuario from '../../components/configuracion/Usuario';
+import Notificaciones from '../../components/configuracion/Notificaciones';
 
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import PasswordIcon from '@mui/icons-material/Password';
 import KeyIcon from '@mui/icons-material/Key';
 import PersonIcon from '@mui/icons-material/Person';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+
 import {
     List,
     ListItem,
@@ -22,6 +25,7 @@ export default function Configuracion() {
     const [password, setPassword] = useState(false);
     const [autenticacion, setAutenticacion] = useState(false);
     const [usuario, setUsuario] = useState(false);
+    const [notificaciones, setNotificaciones] = useState(false);
 
     const handleOpen = () => {
         setOpen(true);
@@ -34,6 +38,7 @@ export default function Configuracion() {
         setAutenticacion(false);
         setUsuario(false);
         setOpen(false);
+        setNotificaciones(false);
         if (password) handleOpen();
     }
 
@@ -43,6 +48,7 @@ export default function Configuracion() {
         setPassword(false);
         setUsuario(false);
         setOpen(false);
+        setNotificaciones(false);
         if (autenticacion) handleOpen();
     }
 
@@ -52,7 +58,18 @@ export default function Configuracion() {
         setAutenticacion(false);
         setPassword(false);
         setOpen(false);
+        setNotificaciones(false);
         if (usuario) handleOpen();
+    }
+
+    const handleNotificaciones = () => {
+        setSelected('notificaciones');
+        setNotificaciones(!notificaciones);
+        setAutenticacion(false);
+        setPassword(false);
+        setOpen(false);
+        setUsuario(false);
+        if (notificaciones) handleOpen();
     }
 
 
@@ -106,6 +123,19 @@ export default function Configuracion() {
                                 </ListItemButton>
                             </ListItem>
 
+                            <ListItem >
+                                <ListItemButton
+                                    onClick={handleNotificaciones}
+                                    selected={selected === 'notificaciones'}
+                                >
+                                    <ListItemIcon>
+                                        <NotificationsIcon />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Notificaciones" />
+                                    {notificaciones ? <ArrowBackIosIcon /> : <ArrowForwardIosIcon />}
+                                </ListItemButton>
+                            </ListItem>
+
                         </List>
                     </div>
 
@@ -119,6 +149,8 @@ export default function Configuracion() {
                         {usuario && <Usuario />}
                         {autenticacion && <Autenticacion />}
                         {password && <Password />}
+                        {notificaciones && <Notificaciones />}
+
 
                     </div>
 

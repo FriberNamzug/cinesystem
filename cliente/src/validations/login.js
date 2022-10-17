@@ -51,9 +51,9 @@ export const validarNuevoRegistro = (e) => {
         } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(e.target.value)) {
             return { ...error, error: true, message: "La contraseña debe tener al menos un caracter especial" }
         } else if (/([0-9])\1{2}/.test(e.target.value)) {
-            return { ...error, error: true, message: "La contraseña no puede tener nos numeros consecutivos" }
+            return { ...error, error: true, message: "La contraseña no puede tener dos numeros consecutivos" }
         } else if (/([a-zA-Z])\1{2}/.test(e.target.value)) {
-            return { ...error, error: true, message: "La contraseña no puede tener nos letras consecutivas" }
+            return { ...error, error: true, message: "La contraseña no puede tener dos letras consecutivas" }
         }
         else {
             return { ...error, error: false, message: "" }

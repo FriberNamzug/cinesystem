@@ -43,16 +43,16 @@ export const verificarToken = async (token) => {
 
 // 2 F A
 
-export const crear2FA = async (token) => {
-    return await axios.post(`/auth/2fa/crear`, {}, {
+export const crear2FA = async (token, password) => {
+    return await axios.post(`/auth/2fa/crear`, { password }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
 }
 
-export const eliminar2FA = async (token) => {
-    return await axios.post(`/auth/2fa/eliminar`, {
+export const eliminar2FA = async (token, password) => {
+    return await axios.post(`/auth/2fa/eliminar`, { password }, {
         headers: {
             Authorization: `Bearer ${token}`
         }

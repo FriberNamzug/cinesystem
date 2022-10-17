@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
-import { CircularProgress, TextField, Button, Collapse } from "@mui/material"
+import { LinearProgress, TextField, Button, Collapse } from "@mui/material"
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-
+import { Alert } from "@mui/material"
 
 import { toast } from 'react-toastify'
 
-import { validarPassword, error as err } from '../../validations/configuracion'
+import { validacionCambiarPassword, error as err } from '../../validations/configuracion'
+
+import { updatePassword } from '../../services/usuarios'
 
 export default function Password() {
   const [password, setPassword] = useState({
@@ -18,6 +18,7 @@ export default function Password() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(err);
+  const [token, setToken] = useState(window.localStorage.getItem('token'));
 
   const handleChange = (e) => {
     setPassword({
@@ -26,7 +27,7 @@ export default function Password() {
     });
     setError({
       ...error,
-      [e.target.name]: validarPassword(e, password)
+      [e.target.name]: validacionCambiarPassword(e, password)
     });
   }
 
@@ -35,9 +36,12 @@ export default function Password() {
     if (error.newPassword.error || error.newPasswordVerify.error || error.oldPassword.error) return toast.error('Soluciona los errores en el formulario');
     setLoading(true);
     try {
+      console.log(password);
+      await updatePassword(token, password);
       setPassword({})
       setError(err)
       setLoading(false);
+      toast.success('Contraseña actualizada');
     } catch (error) {
       setLoading(false);
       console.log(error)
@@ -99,7 +103,7 @@ export default function Password() {
           disabled={loading}
         >
           {loading ? (
-            <CircularProgress color="info" />
+            <LinearProgress color="info" />
           ) : (
             "Cambiar Contraseña"
           )}
