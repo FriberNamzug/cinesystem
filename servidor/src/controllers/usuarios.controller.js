@@ -5,8 +5,14 @@ import bcrypt from "bcryptjs";
 export const getUsuario = async (req, res) => {
     try {
         const { id } = req.user;
-        const response = await pool.query("SELECT nombre, email, notificaciones, telefono FROM usuarios WHERE id_usuario = ?", [id]);
-        res.status(200).json(response[0]);
+        const response = await pool.query("SELECT nombre, email, notificaciones, telefono, two_factor FROM usuarios WHERE id_usuario = ?", [id]);
+        res.status(200).json({
+            nombre: response[0][0].nombre,
+            email: response[0][0].email,
+            notificaciones: response[0][0].notificaciones,
+            telefono: response[0][0].telefono,
+            twoFactor: response[0][0].two_factor
+        });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error interno del servidor" });
@@ -16,33 +22,36 @@ export const getUsuario = async (req, res) => {
 export const updateUsuario = async (req, res) => {
     try {
         const { id } = req.user;
-        const { nombre, email } = req.body;
-
+        const { nombre, email, telefono } = req.body;
 
         if (!nombre || !email) return res.status(400).json({ message: "Faltan campos" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
         if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
 
+        //Si el telefono no es null, comprobar que es un numero de telefono valido (10 digitos)
+        if (telefono && !telefono.match(/^[0-9]{10}$/)) return res.status(400).json({ message: "El teléfono no es válido" });
+
 
         const usuario = await pool.query("SELECT id_usuario FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
         if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
-        const usuarioActual = await pool.query("SELECT nombre, email FROM usuarios WHERE id_usuario = ?", [id]);
-        if (usuarioActual[0][0].nombre === nombre && usuarioActual[0][0].email === email) return res.status(400).json({ message: "No hay cambios" });
+        const usuarioActual = await pool.query("SELECT nombre, email, telefono FROM usuarios WHERE id_usuario = ?", [id]);
+        if (usuarioActual[0][0].nombre === nombre && usuarioActual[0][0].email === email && usuarioActual[0][0].telefono === telefono) return res.status(400).json({ message: "No hay cambios" });
 
         if (usuarioActual[0][0].email !== email) {
             const emailExistente = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 1", [email]);
             if (emailExistente[0].length > 0) return res.status(400).json({ message: "El email ya esta registrado" });
         }
 
-        await pool.query("UPDATE usuarios SET nombre = ?, email = ? WHERE id_usuario = ?", [nombre, email, id]);
+        await pool.query("UPDATE usuarios SET nombre = ?, email = ?, telefono = ? WHERE id_usuario = ?", [nombre, email, telefono, id]);
         res.json({
             message: "Usuario actualizado",
             usuario: {
                 id,
                 nombre,
-                email
+                email,
+                telefono
             }
         });
 
@@ -87,6 +96,39 @@ export const updateNotificaciones = async (req, res) => {
             message: "Notificaciones actualizadas",
             notificaciones: notificaciones
         });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+}
+
+export const updatePassword = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { password, newPassword } = req.body;
+
+        if (!password || !newPassword) return res.status(400).json({ message: "Faltan campos" });
+        if (password.length > 45 || newPassword.length > 45) return res.status(400).json({ message: "La contraseña no puede tener más de 45 caracteres" });
+
+        const usuario = await pool.query("SELECT id_usuario, password FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
+        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        if (!bcrypt.compareSync(password, usuario[0][0].password)) return res.status(400).json({ message: "La contraseña es incorrecta" });
+
+        if (!password.length >= 8) return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+        if (!password.match(/[A-Z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra mayúscula" });
+        if (!password.match(/[a-z]/)) return res.status(400).json({ message: "La contraseña debe tener al menos una letra minúscula" });
+        if (!password.match(/[0-9]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un número" });
+        if (!password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)) return res.status(400).json({ message: "La contraseña debe tener al menos un caracter especial" });
+        if (/([0-9])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 números seguidos" });
+        if (/([a-zA-Z])\1{2}/.test(password)) return res.status(400).json({ message: "La contraseña no puede tener 3 letras seguidas" });
+
+        const salt = bcrypt.genSaltSync();
+        const hash = bcrypt.hashSync(newPassword, salt);
+
+        await pool.query("UPDATE usuarios SET password = ? WHERE id_usuario = ?", [hash, id]);
+
+        res.json({ message: "Contraseña actualizada" });
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);

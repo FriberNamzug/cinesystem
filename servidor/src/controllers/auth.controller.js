@@ -244,14 +244,19 @@ export const verifyToken = async (req, res) => {
 export const crear2FA = async (req, res) => {
     try {
         const { id } = req.user;
+        const { password } = req.body;
         /* Buscamos al usuario para validar que no tenga un secret_oauth */
-        const [user] = await pool.query("SELECT email, secret_oauth FROM usuarios WHERE id_usuario = ?", [id]);
+        const [user] = await pool.query("SELECT email, password, secret_oauth FROM usuarios WHERE id_usuario = ?", [id]);
         if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
         if (user[0].secret_oauth !== null) return res.status(400).json({ message: "El usuario ya tiene activado el 2FA" });
+
+        const validPassword = await bcrypt.compare(password, user[0].password);
+        if (!validPassword) return res.status(400).json({ message: "La contraseña no es correcta" });
+
         const secret = authenticator.generateSecret();
         const url = authenticator.keyuri(user[0].email, process.env.OAUTH_NAME, secret);
         const qr = await QRCode.toDataURL(url);
-        await pool.query("UPDATE usuarios SET secret_oauth = ? WHERE id_usuario = ?", [secret, id]);
+        await pool.query("UPDATE usuarios SET secret_oauth = ?, two_factor = 1 WHERE id_usuario = ?", [secret, id]);
         res.json({ qr });
 
     } catch (error) {
@@ -265,12 +270,16 @@ export const crear2FA = async (req, res) => {
 export const eliminar2FA = async (req, res) => {
     try {
         const { id } = req.user;
+        const { password } = req.body;
         /* Verificamos que el usuario tenga un secret_oauth a eliminar */
-        const [user] = await pool.query("SELECT secret_oauth FROM usuarios WHERE id_usuario = ?", [id]);
+        const [user] = await pool.query("SELECT secret_oauth,password FROM usuarios WHERE id_usuario = ?", [id]);
         if (user.length === 0) return res.status(400).json({ message: "El usuario no existe" });
         if (user[0].secret_oauth === null) return res.status(400).json({ message: "El usuario no tiene activado el 2FA" });
 
-        await pool.query("UPDATE usuarios SET secret_oauth = NULL WHERE id_usuario = ?", [id]);
+        const validPassword = await bcrypt.compare(password, user[0].password);
+        if (!validPassword) return res.status(400).json({ message: "La contraseña no es correcta" });
+
+        await pool.query("UPDATE usuarios SET secret_oauth = NULL, two_factor = 0 WHERE id_usuario = ?", [id]);
         res.status(200).json({ message: "Código de seguridad eliminado" });
 
     } catch (error) {

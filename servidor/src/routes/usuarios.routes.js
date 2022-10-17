@@ -10,6 +10,7 @@ router.get("/u/", verifyToken, usuarios.getUsuario);
 router.put("/u/", verifyToken, usuarios.updateUsuario);
 router.delete("/u/", verifyToken, usuarios.deleteUsuario);
 router.post("/u/notificaciones", verifyToken, usuarios.updateNotificaciones);
+router.put("/u/password", verifyToken, usuarios.updatePassword);
 
 
 /* Administrador */
