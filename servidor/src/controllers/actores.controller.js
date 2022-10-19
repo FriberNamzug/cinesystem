@@ -36,6 +36,30 @@ export const getActor = async (req, res) => {
     }
 }
 
+export const searchActores = async (req, res) => {
+    try {
+        const { pagina, limite, busqueda } = req.query;
+        if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+
+        const total = await pool.query("SELECT COUNT(*) FROM actores WHERE (nombre LIKE ? OR apellido LIKE ? OR CONCAT(nombre, ' ', apellido) LIKE ? OR CONCAT(apellido, ' ', nombre) LIKE ?) AND status = 1", [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const actores = await pool.query("SELECT * FROM actores WHERE (nombre LIKE ? OR apellido LIKE ? OR CONCAT(nombre, ' ', apellido) LIKE ? OR CONCAT(apellido, ' ', nombre) LIKE ?) AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, Number(limite), Number(offset)]);
+        if (actores[0].length === 0) return res.status(404).json({ message: "No hay actores" });
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            actores: actores[0],
+        });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+}
+
 export const createActor = async (req, res) => {
     try {
         const { nombre, apellido, fecha_nacimiento } = req.body;

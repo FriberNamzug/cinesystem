@@ -5,6 +5,7 @@ import verifyAdminUser from "../middlewares/verifyAdminUser.js";
 
 const router = Router();
 
+router.get('/search/', generos.searchGeneros);
 router.get("/", generos.getGeneros)
 router.get("/:id", generos.getGenero)
 

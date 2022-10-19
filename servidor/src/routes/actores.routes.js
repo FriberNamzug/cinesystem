@@ -5,6 +5,7 @@ import verifyAdminUser from "../middlewares/verifyAdminUser.js";
 
 const router = Router();
 
+router.get('/search/', actores.searchActores);
 router.get("/", actores.getActores)
 router.get("/:id", actores.getActor)
 

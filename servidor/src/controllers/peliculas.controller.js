@@ -1,11 +1,11 @@
 import pool from "../config/db.js";
 import logger from "../config/logger.js";
 
-export const getPeliculas = async (req, res) => {
+export const getPeliculasFull = async (req, res) => {
     try {
         /* Recuperamos la pagina y el limite de la ruta */
         const { pagina, limite } = req.query;
-        
+
         if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
 
 
@@ -57,6 +57,39 @@ export const getPeliculas = async (req, res) => {
     }
 }
 
+export const getPeliculas = async (req, res) => {
+
+    try {
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const peliculas = await pool.query("SELECT * FROM peliculas LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (!peliculas[0]) return res.status(404).json({ message: "No se encontraron peliculas" });
+
+
+        for (let i = 0; i < peliculas[0].length; i++) {
+            const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
+            peliculas[0][i].imagenes = imagenes[0];
+        }
+
+
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            peliculas: peliculas[0],
+        });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+
+}
+
 export const getPelicula = async (req, res) => {
     try {
         const { id } = req.params;
@@ -98,6 +131,28 @@ export const getPelicula = async (req, res) => {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
 
+    }
+}
+
+export const searchPeliculas = async (req, res) => {
+    try {
+        const { pagina, limite, busqueda } = req.query;
+        if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE titulo LIKE ? AND status = 1", [`%${busqueda}%`]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+
+        const peliculas = await pool.query("SELECT * FROM peliculas WHERE titulo LIKE ? AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+
+        if (peliculas[0].length === 0) return res.status(404).json({ message: "No se encontraron películas" });
+
+        res.status(200).json({ totalPaginas, peliculas: peliculas[0] });
+
+
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 

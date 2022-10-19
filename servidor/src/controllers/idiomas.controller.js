@@ -38,6 +38,28 @@ export const getIdioma = async (req, res) => {
     }
 }
 
+export const searchIdiomas = async (req, res) => {
+    try {
+        const { pagina, limite, busqueda } = req.query;
+        if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM idiomas WHERE nombre LIKE ? AND status = 1", [`%${busqueda}%`]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const idiomas = await pool.query("SELECT * FROM idiomas WHERE nombre LIKE ? AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+        if (idiomas[0].length === 0) return res.status(404).json({ message: "No hay idiomas" });
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            idiomas: idiomas[0],
+        });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+}
+
 export const createIdioma = async (req, res) => {
     try {
         const { nombre } = req.body;
@@ -107,7 +129,7 @@ export const deleteIdioma = async (req, res) => {
 
         const relacion = await pool.query("SELECT id_idioma FROM peliculas_idiomas WHERE id_idioma = ? ", [id]);
         if (relacion[0].length > 0) return res.status(400).json({ message: "No se puede eliminar el idioma porque tiene peliculas relacionadas" });
-    
+
 
         const deleteIdioma = await pool.query("UPDATE idiomas SET status = 0 WHERE id_idioma = ?", [id]);
         if (deleteIdioma[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar el idioma" });

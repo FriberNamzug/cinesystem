@@ -5,6 +5,7 @@ import verifyAdminUser from "../middlewares/verifyAdminUser.js";
 
 const router = Router();
 
+router.get('/search/', director.searchDirectores);
 router.get('/', director.getDirectores);
 router.get('/:id', director.getDirector);
 

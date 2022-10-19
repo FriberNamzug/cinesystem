@@ -7,6 +7,8 @@ import verifyAdminUser from "../middlewares/verifyAdminUser.js";
 const router = Router();
 
 
+router.get('/search/', idiomas.searchIdiomas);
+
 router.get('/', idiomas.getIdiomas);
 router.get('/:id', idiomas.getIdioma);
 

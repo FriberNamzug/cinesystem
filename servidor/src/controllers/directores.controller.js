@@ -37,6 +37,31 @@ export const getDirector = async (req, res) => {
     }
 }
 
+export const searchDirectores = async (req, res) => {
+    try {
+        const { pagina, limite, busqueda } = req.query;
+        if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+
+        const total = await pool.query("SELECT COUNT(*) FROM directores WHERE nombre LIKE ? OR apellido LIKE ?", [`%${busqueda}%`, `%${busqueda}%`]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const directores = await pool.query("SELECT * FROM directores WHERE status = 1 AND (nombre LIKE ? OR apellido LIKE ?) LIMIT ? OFFSET ?", [`%${busqueda}%`, `%${busqueda}%`, Number(limite), Number(offset)]);
+        if (directores[0].length === 0) return res.status(404).json({ message: "No hay directores" });
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            directores: directores[0],
+        });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: 'Error al buscar directores' });
+    }
+}
+
 export const createDirector = async (req, res) => {
     try {
         const { nombre, apellido } = req.body;

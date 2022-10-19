@@ -37,6 +37,29 @@ export const getGenero = async (req, res) => {
     }
 }
 
+export const searchGeneros = async (req, res) => {
+    try {
+        const { pagina, limite, busqueda } = req.query;
+        if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM generos WHERE nombre LIKE ?", [`%${busqueda}%`]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const generos = await pool.query("SELECT * FROM generos WHERE nombre LIKE ? AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+        if (generos[0].length === 0) return res.status(404).json({ message: "No hay géneros" });
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            generos: generos[0],
+        });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+}
+
 export const createGenero = async (req, res) => {
     try {
         const { nombre } = req.body;
