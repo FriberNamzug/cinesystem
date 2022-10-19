@@ -8,7 +8,7 @@ export const getActores = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM actores");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const actores = await pool.query("SELECT * FROM actores LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const actores = await pool.query("SELECT * FROM actores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
 
         if (actores[0].length === 0) return res.status(404).json({ message: "No hay actores" });
         res.status(200).json({

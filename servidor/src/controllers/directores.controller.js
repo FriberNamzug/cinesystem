@@ -8,7 +8,7 @@ export const getDirectores = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM directores");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const directores = await pool.query("SELECT * FROM directores LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const directores = await pool.query("SELECT * FROM directores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
         if (directores[0].length === 0) return res.status(404).json({ message: "No hay directores" });
 
         res.status(200).json({
@@ -27,7 +27,7 @@ export const getDirectores = async (req, res) => {
 export const getDirector = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await pool.query('SELECT * FROM directores WHERE id_director = $1', [id]);
+        const response = await pool.query('SELECT * FROM directores WHERE id_director = ?', [id]);
         if (response[0].length === 0) return res.status(404).json({ message: "El director no existe" });
         res.status(200).json(response[0]);
 

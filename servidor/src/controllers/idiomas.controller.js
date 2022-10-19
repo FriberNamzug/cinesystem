@@ -8,9 +8,10 @@ export const getIdiomas = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM idiomas");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const idiomas = await pool.query("SELECT * FROM idiomas LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const idiomas = await pool.query("SELECT * FROM idiomas WHERE status = 1 LIMIT ? OFFSET ? ", [Number(limite), Number(offset)]);
 
         if (idiomas[0].length === 0) return res.status(404).json({ message: "No hay idiomas" });
+
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
@@ -53,7 +54,7 @@ export const createIdioma = async (req, res) => {
         if (idiomas[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo crear el idioma" });
 
         res.status(200).json({
-            message: "Género creado",
+            message: "Idioma creado",
             idioma: {
                 id_idioma: idiomas[0].insertId,
                 ...newIdioma
@@ -76,7 +77,7 @@ export const updateIdioma = async (req, res) => {
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
 
         const idioma = await pool.query("SELECT nombre FROM idiomas WHERE id_idioma = ? AND status = 1", [id]);
-        if (idioma[0].length === 0) return res.status(404).json({ message: "El género no existe" });
+        if (idioma[0].length === 0) return res.status(404).json({ message: "El idioma no existe" });
 
         if (idioma[0][0].nombre === nombre) return res.status(400).json({ message: "No se hicieron cambios" });
 
@@ -84,7 +85,7 @@ export const updateIdioma = async (req, res) => {
         if (updateIdioma[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo actualizar el idioma" });
 
         res.status(200).json({
-            message: "Género actualizado",
+            message: "Idioma actualizado",
             idioma: {
                 id: id,
                 nombre
@@ -112,7 +113,7 @@ export const deleteIdioma = async (req, res) => {
         if (deleteIdioma[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar el idioma" });
 
         res.status(200).json({
-            message: "Género eliminado",
+            message: "Idioma eliminado",
             idioma: {
                 id: id,
                 nombre: idioma[0][0].nombre
