@@ -65,13 +65,18 @@ export const getPeliculas = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM peliculas");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const peliculas = await pool.query("SELECT * FROM peliculas LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const peliculas = await pool.query("SELECT * FROM peliculas WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
         if (!peliculas[0]) return res.status(404).json({ message: "No se encontraron peliculas" });
 
 
         for (let i = 0; i < peliculas[0].length; i++) {
             const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
-            peliculas[0][i].imagenes = imagenes[0];
+            //Las peliculas que no tienen imagenes ponemos una url por defecto
+            if (imagenes[0].length === 0) {
+                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png" }];
+            } else {
+                peliculas[0][i].imagenes = imagenes[0];
+            }
         }
 
 
@@ -400,15 +405,10 @@ export const deletePelicula = async (req, res) => {
         if (pelicula[0].length === 0) return res.status(400).json({ message: "La película no existe" });
 
         // Borramos en las relaciones que existen para no dejar basura en la DB
-        const idiomas = await pool.query("DELETE FROM peliculas_idiomas WHERE id_pelicula = ?", [id]);
-        if (idiomas[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
-        const actores = await pool.query("DELETE FROM peliculas_actores WHERE id_pelicula = ?", [id]);
-        if (actores[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
-        const directores = await pool.query("DELETE FROM peliculas_directores WHERE id_pelicula = ?", [id]);
-        if (directores[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
-        const generos = await pool.query("DELETE FROM peliculas_generos WHERE id_pelicula = ?", [id]);
-        if (generos[0].affectedRows === 0) logger.error(`${error} - ${req.originalUrl} - ${req.method} - ID_PELICULA: ${id}`);
-
+        await pool.query("DELETE FROM peliculas_idiomas WHERE id_pelicula = ?", [id]);
+        await pool.query("DELETE FROM peliculas_actores WHERE id_pelicula = ?", [id]);
+        await pool.query("DELETE FROM peliculas_directores WHERE id_pelicula = ?", [id]);
+        await pool.query("DELETE FROM peliculas_generos WHERE id_pelicula = ?", [id]);
         const deletePelicula = await pool.query("UPDATE peliculas SET status = 0 WHERE id_pelicula = ?", [id]);
         if (deletePelicula[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar la película" });
 
