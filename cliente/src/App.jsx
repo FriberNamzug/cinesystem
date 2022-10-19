@@ -16,10 +16,17 @@ import Usuarios from './pages/admin/Usuarios'
 import Funciones from './pages/admin/Funciones'
 import Peliculas from './pages/admin/Peliculas'
 
+import Actores from './pages/admin/Actores'
+import Directores from './pages/admin/Directores'
+import Generos from './pages/admin/Generos'
+import Idiomas from './pages/admin/Idiomas'
+
+
 
 
 import Toast from './components/Toast'
 import RoutesDashboard from './components/RoutesDashboard'
+import RoutesPeliculas from './components/RoutesPeliculas'
 
 
 function App() {
@@ -45,8 +52,15 @@ function App() {
             <Route path="admin" element={<Admin />} />
             <Route path="settings" element={<Configuracion />} />
             <Route path="usuarios" element={<Usuarios />} />
-            <Route path="peliculas" element={<Peliculas />} />
             <Route path="funciones" element={<Funciones />} />
+
+            <Route path="peliculas" element={<RoutesPeliculas />} >
+              <Route index element={<Peliculas />} />
+              <Route path="actores" element={<Actores />} />
+              <Route path="directores" element={<Directores />} />
+              <Route path="generos" element={<Generos />} />
+              <Route path="idiomas" element={<Idiomas />} />
+            </Route>
           </Route>
         </Route>
 
