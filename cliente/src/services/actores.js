@@ -8,6 +8,10 @@ export const obtenerActor = async (id) => {
     return await axios.get(`/actores/${id}`);
 }
 
+export const buscarActores = async (pagina, limite, busqueda) => {
+    return await axios.get(`/actores/search?pagina=${pagina}&limite=${limite}&busqueda=${busqueda}`);
+}
+
 export const crearActor = async (token, actor) => {
     return await axios.post(`/actores`, actor, {
         headers: {

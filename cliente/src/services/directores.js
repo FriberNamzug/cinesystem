@@ -8,6 +8,10 @@ export const obtenerDirector = async (id) => {
     return await axios.get(`/directores/${id}`);
 }
 
+export const buscarDirectores = async (pagina,limite,busqueda) => {
+    return await axios.get(`/directores/search?pagina=${pagina}&limite=${limite}&busqueda=${busqueda}`);
+}
+
 export const crearDirector = async (token, director) => {
     return await axios.post(`/directores`, director, {
         headers: {

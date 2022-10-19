@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-export const obtenerIdiomas = async (pagina,limite) => {
+export const obtenerIdiomas = async (pagina, limite) => {
     return await axios.get(`/idiomas?pagina=${pagina}&limite=${limite}`);
 }
 
 export const obtenerIdioma = async (id) => {
     return await axios.get(`/idiomas/${id}`);
+}
+
+export const buscarIdiomas = async (pagina,limite,busqueda) => {
+    return await axios.get(`/idiomas/search/?pagina=${pagina}&limite=${limite}&busqueda=${busqueda}`);
 }
 
 export const crearIdioma = async (token, idioma) => {

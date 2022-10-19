@@ -8,6 +8,10 @@ export const obtenerGenero = async (id) => {
     return await axios.get(`/generos/${id}`);
 }
 
+export const buscarGeneros = async (pagina,limite,busqueda) => {
+    return await axios.get(`/generos/search/?pagina=${pagina}&limite=${limite}&busqueda=${busqueda}`);
+}
+
 export const crearGenero = async (token, genero) => {
     return await axios.post(`/generos`, genero, {
         headers: {
