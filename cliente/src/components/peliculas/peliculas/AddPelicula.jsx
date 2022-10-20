@@ -157,8 +157,8 @@ export default function AddPelicula({ close, update }) {
             });
             setLoading(false);
             toast.success("Pelicula creada con exito");
-
-
+            close();
+            update();
         } catch (error) {
             console.log(error);
             setLoading(false);
