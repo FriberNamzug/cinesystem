@@ -11,6 +11,9 @@ router.get("/p/full/", peliculas.getPeliculasFull)
 router.get("/p/", peliculas.getPeliculas)
 router.get("/:id", peliculas.getPelicula)
 
+router.get("/estatus/disponibilidad", verifyToken, verifyAdminUser, peliculas.getDisponibilidad)
+router.put("/estatus/disponibilidad/:id_pelicula", verifyToken, verifyAdminUser, peliculas.updateDisponibilidad)
+
 router.post("/", verifyToken, verifyAdminUser, peliculas.createPelicula)
 router.put("/:id_pelicula", verifyToken, verifyAdminUser, peliculas.updatePelicula)
 router.delete("/:id", verifyToken, verifyAdminUser, peliculas.deletePelicula)

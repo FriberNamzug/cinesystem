@@ -14,6 +14,7 @@ import directoresRoutes from './routes/directores.routes.js'
 import actoresRoutes from './routes/actores.routes.js'
 import idiomasRoutes from './routes/idiomas.routes.js'
 import uploadsRoutes from './routes/uploads.routes.js'
+import funcionesRoutes from './routes/funciones.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
@@ -43,6 +44,7 @@ app.use("/directores", directoresRoutes)
 app.use("/actores", actoresRoutes)
 app.use("/idiomas", idiomasRoutes)
 app.use("/uploads", uploadsRoutes)
+app.use("/funciones", funcionesRoutes)
 
 /* Ejecutamos un cron schedule cada 25 minutos */
 cron.schedule('*/25 * * * *', () => {
