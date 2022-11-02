@@ -33,7 +33,7 @@ export const signIn = async (req, res) => {
 
             if (usuario[0].notificaciones === 1) {
                 const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
-                sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+                await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 
             return res.json({ token, "twofa": false });
@@ -232,6 +232,9 @@ export const verifyToken = async (req, res) => {
         console.log(req.user);
         res.status(200).json({
             message: "Token valido",
+            data: {
+                permissions: req.user.rol,
+            }
         })
     }
     catch (error) {
@@ -320,7 +323,7 @@ export const verificar2FA = async (req, res) => {
 
             if (usuario[0].notificaciones === 1) {
                 const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
-                sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+                await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 
             return res.json({ message: "Codigo correcto", token, twofa: true });

@@ -14,6 +14,7 @@ const useValidateToken = () => {
         }, [loading]);
 
         const validacion = async () => {
+
             try {
                 const response = await axios.get('/auth/verifytoken', {
                     headers: {
@@ -24,7 +25,6 @@ const useValidateToken = () => {
                 if (response.status === 200) {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     axios.defaults.headers.common['Content-Type'] = 'application/json';
-                    //Guardamos los permisos recibidos en el localStorage
                     return response;
                 } else {
                     //Borramos todo lo que exista en el localStorage

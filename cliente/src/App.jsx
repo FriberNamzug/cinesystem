@@ -46,26 +46,31 @@ function App() {
         <Route path="/recuperar_password/:token" element={<RecuperarPassword />} />
 
 
-        <Route element={<ProtectedRouter permisos={["Administrador"]} />} >
+        <Route element={<ProtectedRouter permisos={["Usuario", "Administrador"]} />} >
           <Route path="dashboard" element={<RoutesDashboard />}>
             <Route index element={<Dashboard />} />
-            <Route path="admin" element={<Admin />} />
             <Route path="settings" element={<Configuracion />} />
-            <Route path="usuarios" element={<Usuarios />} />
-            <Route path="funciones" element={<Funciones />} />
 
-            <Route path="peliculas" element={<RoutesPeliculas />} >
-              <Route index element={<Peliculas />} />
-              <Route path="actores" element={<Actores />} />
-              <Route path="directores" element={<Directores />} />
-              <Route path="generos" element={<Generos />} />
-              <Route path="idiomas" element={<Idiomas />} />
+            <Route element={<ProtectedRouter permisos={["Administrador"]} />} >
+              <Route path="admin" element={<Admin />} />
+              <Route path="settings" element={<Configuracion />} />
+              <Route path="usuarios" element={<Usuarios />} />
+              <Route path="funciones" element={<Funciones />} />
+
+              <Route path="peliculas" element={<RoutesPeliculas />} >
+                <Route index element={<Peliculas />} />
+                <Route path="actores" element={<Actores />} />
+                <Route path="directores" element={<Directores />} />
+                <Route path="generos" element={<Generos />} />
+                <Route path="idiomas" element={<Idiomas />} />
+              </Route>
+
             </Route>
+
           </Route>
         </Route>
 
-        <Route element={<ProtectedRouter permisos={["Usuario"]} />} >
-        </Route>
+
 
 
       </Routes>
