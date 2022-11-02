@@ -432,18 +432,28 @@ export const getDisponibilidad = async (req, res) => {
 }
 
 export const updateDisponibilidad = async (req, res) => {
+
+    const { id_pelicula } = req.params;
+    const { disponibilidad } = req.body;
+    if (disponibilidad !== true && disponibilidad !== false) return res.status(400).json({ message: "La disponibilidad solo puede ser true o false" });
+    if (disponibilidad === undefined) return res.status(400).json({ message: "La disponibilidad es requerida" });
+
     try {
-        const { id_pelicula } = req.params;
-        const { disponibilidad } = req.body;
 
-        if (disponibilidad === undefined) return res.status(400).json({ message: "La disponibilidad es requerida" });
-        if (disponibilidad !== true && disponibilidad !== false) return res.status(400).json({ message: "La disponibilidad solo puede ser true o false" });
         const pelicula = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ? AND status = 1", [id_pelicula]);
-
         if (pelicula[0].length === 0) return res.status(400).json({ message: "La película no existe" });
+
+        // Validamos si la pelicula cuenta con una funcion activa
+        if (disponibilidad === false) {
+            const funcion = await pool.query("SELECT * FROM funciones WHERE id_pelicula = ? AND status = 1", [id_pelicula]);
+            if (funcion[0].length > 0) return res.status(400).json({ message: "La película no puede ser deshabilitada porque tiene funciones activas" });
+        }
+
         const updateDisponibilidad = await pool.query("UPDATE peliculas SET disponibilidad = ? WHERE id_pelicula = ?", [disponibilidad, id_pelicula]);
         if (updateDisponibilidad[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo actualizar la disponibilidad" });
+
         res.json({ message: "Disponibilidad actualizada" });
+
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
