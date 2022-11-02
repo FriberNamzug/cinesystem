@@ -1,21 +1,13 @@
 import { Navigate, Outlet, useNavigate } from "react-router-dom"
 import axios from 'axios';
-
-import { useState } from "react";
-
 import { verificarToken } from "../services/auth";
-
 import { toast } from 'react-toastify';
-
-
 
 export const ProtectedRouter = ({ permisos, redirectTo = "/" }) => {
     const navigate = useNavigate();
 
     try {
         const token = localStorage.getItem("token")
-        const [permiso, setPermiso] = useState(null)
-
         if (!token) return <Navigate to={redirectTo} />
 
         verificarToken(token)
@@ -25,13 +17,21 @@ export const ProtectedRouter = ({ permisos, redirectTo = "/" }) => {
                 console.log("PROTECTED ROUTER PROTEGIENDO XD")
                 return navigate(redirectTo)
             }).then(res => {
-                setPermiso(res.data.permiso)
-                console.log(res)
+                localStorage.setItem("permissions", res.data.data.permissions)
+                const permissions = res.data.data.permissions
+
+                if (permisos) {
+                    if (!permisos.some(permiso => permissions.includes(permiso))) {
+                        console.log("NO TIENE PERMISOS")
+                        toast.error("No tiene permisos para acceder a esta ruta")
+                        //Redireccionamos a la pagina anterior
+                        return navigate(-1)
+                    }
+                }
             })
 
-        if (permisos.includes(permiso)) {
-            console.log("Tiene permiso")
-        }
+
+
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         return <Outlet />
 
