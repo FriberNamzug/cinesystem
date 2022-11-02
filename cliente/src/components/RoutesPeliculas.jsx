@@ -12,6 +12,7 @@ const RoutesPeliculas = () => {
                     <Tab label="Directores" value={3} to="./directores" component={Link} />
                     <Tab label="Generos" value={4} to="./generos" component={Link} />
                     <Tab label="Idiomas" value={5} to="./idiomas" component={Link} />
+                    <Tab label="Disponibilidad" value={5} to="./disponibilidad" component={Link} />
                 </Tabs>
             </div>
             <Divider />

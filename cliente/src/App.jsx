@@ -20,8 +20,10 @@ import Actores from './pages/admin/Actores'
 import Directores from './pages/admin/Directores'
 import Generos from './pages/admin/Generos'
 import Idiomas from './pages/admin/Idiomas'
+import Disponibilidad from './pages/admin/Disponibilidad'
 
-
+import Boletos from './pages/client/Boletos'
+import Historial from './pages/client/Historial'
 
 
 import Toast from './components/Toast'
@@ -51,6 +53,11 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="settings" element={<Configuracion />} />
 
+            <Route element={<ProtectedRouter permisos={["Usuario"]} />} >
+              <Route path="tickets" element={<Boletos />} />
+              <Route path="history" element={<Historial />} />
+            </Route>
+
             <Route element={<ProtectedRouter permisos={["Administrador"]} />} >
               <Route path="admin" element={<Admin />} />
               <Route path="settings" element={<Configuracion />} />
@@ -63,6 +70,7 @@ function App() {
                 <Route path="directores" element={<Directores />} />
                 <Route path="generos" element={<Generos />} />
                 <Route path="idiomas" element={<Idiomas />} />
+                <Route path="Disponibilidad" element={<Disponibilidad />} />
               </Route>
 
             </Route>

@@ -52,7 +52,6 @@ export default function Generos() {
         setGeneros(data.generos);
         setLoading(false);
       } catch (error) {
-        setError(true);
         setLoading(false);
         setGeneros([]);
         toast.info(error.response.data.message)
