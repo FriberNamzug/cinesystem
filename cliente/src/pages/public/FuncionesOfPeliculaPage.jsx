@@ -123,6 +123,12 @@ export default function FuncionesOfPeliculaPage() {
           </Box>
 
           {funciones.map((item, index) => {
+            //Convertimos la fecha desde y hasta a formato dd/mm/yyyY 
+            const fechaDesde = new Date(item.desde)
+            const fechaHasta = new Date(item.hasta)
+            const fechaDesdeString = fechaDesde.getDate() + "/" + (fechaDesde.getMonth() + 1) + "/" + fechaDesde.getFullYear()
+            const fechaHastaString = fechaHasta.getDate() + "/" + (fechaHasta.getMonth() + 1) + "/" + fechaHasta.getFullYear()
+
             return (
               <Accordion
                 key={index}
@@ -147,7 +153,7 @@ export default function FuncionesOfPeliculaPage() {
                     Sala: {item.sala}
                   </Typography>
                   <Typography>
-                    Funcion disponible desde el dia: {item.desde} hasta el dia: {item.hasta}
+                    Funcion disponible desde el dia: {fechaDesdeString} hasta el dia: {fechaHastaString}
                   </Typography>
                   <Typography>
                     Precio del boleto general: {item.costo_boleto}
@@ -155,7 +161,7 @@ export default function FuncionesOfPeliculaPage() {
                 </AccordionDetails>
                 <AccordionActions>
                   {permissions === "Usuario" && (
-                    <Button variant='contained' size="small" onClick={() => navigate(`/comprar/${item.id_funcion}`)}>Comprar Boleto</Button>
+                    <Button variant='contained' size="small" onClick={() => navigate(`/dashboard/comprar/${item.id_funcion}`)}>Comprar Boleto</Button>
                   )}
                   {permissions === "none" && (
                     <Button variant='contained' size="small" onClick={() => navigate(`/login`)}>Iniciar Sesion</Button>

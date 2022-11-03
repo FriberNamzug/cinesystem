@@ -29,6 +29,8 @@ import Disponibilidad from './pages/admin/Disponibilidad'
 import Boletos from './pages/client/Boletos'
 import Historial from './pages/client/Historial'
 import Comprar from './pages/client/Comprar'
+import CancelarOrden from './pages/client/CancelarOrden'
+import ConfirmarOrden from './pages/client/ConfirmarOrden'
 
 
 import Toast from './components/Toast'
@@ -69,6 +71,8 @@ function App() {
               <Route path="tickets" element={<Boletos />} />
               <Route path="history" element={<Historial />} />
               <Route path="comprar/:id_funcion" element={<Comprar />} />
+              <Route path="cancelar/:id_folio" element={<CancelarOrden />} />
+              <Route path="confirmar/:id_folio" element={<ConfirmarOrden />} />
             </Route>
 
             <Route element={<ProtectedRouter permisos={["Administrador"]} />} >

@@ -3,6 +3,9 @@ import axios from 'axios';
 export const obtenerFunciones = async () => {
     return await axios.get(`/funciones`);
 }
+export const obtenerFuncion = async (id) => {
+    return await axios.get(`/funciones/${id}`);
+}
 
 export const crearFuncion = async (token, funcion) => {
     return await axios.post(`/funciones`, funcion, {
