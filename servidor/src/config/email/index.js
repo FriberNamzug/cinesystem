@@ -1,6 +1,7 @@
 import {
     activarCuenta,
-    recuperarPasswordEmail
+    recuperarPasswordEmail,
+    ordenDeCompra
 } from "./content.js";
 
 import sendMail from "./sendMail.js";
@@ -10,5 +11,6 @@ export {
     activarCuenta,
     recuperarPasswordEmail,
     sendMail,
-    transporter
+    transporter,
+    ordenDeCompra
 }

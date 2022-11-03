@@ -15,41 +15,43 @@ import actoresRoutes from './routes/actores.routes.js'
 import idiomasRoutes from './routes/idiomas.routes.js'
 import uploadsRoutes from './routes/uploads.routes.js'
 import funcionesRoutes from './routes/funciones.routes.js'
+import paymentsRoutes from './routes/payments.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
 import startWhatsapp from './config/whatsapp.js'
 
 
-const app = express()
+const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
 
 
-app.use(express.json())
-app.use(express.static(path.join(__dirname, './public')))
-app.use(morgan('dev'))
+app.use(express.json());
+app.use(express.static(path.join(__dirname, './public')));
+app.use(morgan('dev'));
 
 app.use(cors({
     origin: ['http://localhost:3000', 'http://192.168.100.40:3000', 'http://192.168.100.8:3000']
-}))
+}));
 
-app.use("/usuarios", usuariosRoutes)
-app.use("/auth", authRoutes)
-app.use("/peliculas", peliculasRoutes)
-app.use("/generos", generosRoutes)
-app.use("/directores", directoresRoutes)
-app.use("/actores", actoresRoutes)
-app.use("/idiomas", idiomasRoutes)
-app.use("/uploads", uploadsRoutes)
-app.use("/funciones", funcionesRoutes)
+app.use("/usuarios", usuariosRoutes);
+app.use("/auth", authRoutes);
+app.use("/peliculas", peliculasRoutes);
+app.use("/generos", generosRoutes);
+app.use("/directores", directoresRoutes);
+app.use("/actores", actoresRoutes);
+app.use("/idiomas", idiomasRoutes);
+app.use("/uploads", uploadsRoutes);
+app.use("/funciones", funcionesRoutes);
+app.use("/payments", paymentsRoutes);
 
 /* Ejecutamos un cron schedule cada 25 minutos */
 cron.schedule('*/25 * * * *', () => {
     console.log('Limpiando usuarios - ejecucion cada 25 minutos');
-    cleanUsers()
+    cleanUsers();
 });
 
 // Iniciamos el cliente de whatsapp

@@ -10,6 +10,18 @@ export const getFunciones = async (req, res) => {
         res.status(500).json({ message: "Error del servidor" });
     }
 }
+export const getFuncion = async (req, res) => {
+    const { id_funcion } = req.params;
+    try {
+        const [funciones] = await pool.query("SELECT * FROM funciones WHERE status = 1 AND id_funcion = ?", [id_funcion]);
+        if (funciones.length === 0) return res.status(404).json({ message: "No existe la función" });
+        const [pelicula] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ?", [funciones[0].id_pelicula]);
+        res.status(200).json({ funcion: funciones[0], pelicula: pelicula[0] });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+}
 
 export const createFuncion = async (req, res) => {
     const { id_pelicula, aforo, sala, fechas, horario } = req.body;

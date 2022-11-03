@@ -21,3 +21,17 @@ export const recuperarPasswordEmail = (nombre, token) => `
         </div>
 
     `
+
+export const ordenDeCompra = (nombre, folio, fecha, hora, descripcion, costo) => `
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px; text-align: center; font-family: sans-serif;">
+        <h1 style="color: #2d3436;">Hola ${nombre} has realizado una compra en ${process.env.APP_NAME}</h1>
+        <p style="color: #2d3436;">Folio de compra: ${folio}</p>
+        <p style="color: #2d3436;">Fecha de compra: ${fecha}</p>
+        <p style="color: #2d3436;">Hora de compra: ${hora}</p>
+        <p style="color: #2d3436;">Descripción de la compra: ${descripcion}</p>
+        <p style="color: #2d3436;">Costo de la compra: ${costo}</p>
+    </div>
+    <div>
+        <p style="color: #2d3436;">Si no has realizado esta compra contacta a soporte</p>
+    </div>
+    `
