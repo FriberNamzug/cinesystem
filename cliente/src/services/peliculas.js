@@ -8,6 +8,18 @@ export const obtenerPelicula = async (id) => {
     return await axios.get(`/peliculas/${id}`);
 }
 
+export const obtenerPeliculasPorGenero = async (genero) => {
+    return await axios.get(`/peliculas/p/genero/${genero}`);
+}
+
+export const obtenerPeliculasConDisponibilidad = async (pagina, limite) => {
+    return await axios.get(`/peliculas/p/disponibilidad?pagina=${pagina}&limite=${limite}`);
+}
+
+export const obtenerPeliculasConFunciones = async (id_pelicula, pagina, limite) => {
+    return await axios.get(`/peliculas/p/funciones/${id_pelicula}?pagina=${pagina}&limite=${limite}`);
+}
+
 export const buscarPeliculas = async (pagina, limite, busqueda) => {
     return await axios.get(`/peliculas/search/?pagina=${pagina}&limite=${limite}&busqueda=${busqueda}`);
 }
@@ -37,7 +49,7 @@ export const eliminarPelicula = async (token, id) => {
 }
 
 export const updateDisponibilidad = async (token, id_pelicula, disponibilidad) => {
-    return await axios.put(`/peliculas/estatus/disponibilidad/${id_pelicula}`, { disponibilidad }, {
+    return await axios.put(`/peliculas/p/disponibilidad/${id_pelicula}`, { disponibilidad }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
