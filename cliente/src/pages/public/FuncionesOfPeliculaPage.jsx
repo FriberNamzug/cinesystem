@@ -29,10 +29,14 @@ export default function FuncionesOfPeliculaPage() {
   const [loading, setLoading] = useState(false)
   const [peliculas, setPeliculas] = useState([])
   const [funciones, setFunciones] = useState([])
+  const [imagenes, setImagenes] = useState([])
   const [expanded, setExpanded] = useState(false);
 
   const [permissions, setPermissions] = useState("Cargando");
   const [flag, setFlag] = useState(0);
+
+  const url = import.meta.env.VITE_RUTA_API;
+
 
 
   useEffect(() => {
@@ -65,6 +69,8 @@ export default function FuncionesOfPeliculaPage() {
         const response = await obtenerPeliculasConFunciones(id_pelicula, "1", "50")
         setPeliculas(response.data.pelicula)
         setFunciones(response.data.funciones)
+        setImagenes(response.data.pelicula.imagenes)
+        console.log(response.data)
         setLoading(true)
       } catch (error) {
         toast.error(error.response.data.message)
@@ -92,10 +98,19 @@ export default function FuncionesOfPeliculaPage() {
         <Paper
           elevation={3}
           className="flex flex-col justify-center items-center w-full p-4"
-          sx={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', 'user-select': 'none', 'border-radius': '10px', }}
+          sx={{
+            backgroundImage: `url(${imagenes.default ? imagenes.url : url + imagenes.urls[0].url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+            backgroundBlendMode: 'multiply',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            color: 'white',
+            'user-select': 'none',
+            'border-radius': '10px',
+          }}
         >
-
-
           <Box sx={{ width: '80%', margin: '10px', }}>
             <Paper elevation={3}>
               <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
@@ -149,14 +164,24 @@ export default function FuncionesOfPeliculaPage() {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
+                  <Typography variant='h6' align='center' >
+                    Funcion disponible desde y hasta:
+                  </Typography>
+                  <Typography>
+                    Desde el dia: {fechaDesdeString}
+                  </Typography>
+                  <Typography>
+                    Hasta el dia: {fechaHastaString}
+                  </Typography>
+
+                  <Typography>
+                    Precio del boleto general: {item.costo_boleto}
+                  </Typography>
                   <Typography>
                     Sala: {item.sala}
                   </Typography>
                   <Typography>
-                    Funcion disponible desde el dia: {fechaDesdeString} hasta el dia: {fechaHastaString}
-                  </Typography>
-                  <Typography>
-                    Precio del boleto general: {item.costo_boleto}
+                    Hasta el momento hay {"item.cantidad_boletos"} boletos vendidos y {"item.aforo - item.cantidad_boletos"} boletos disponibles
                   </Typography>
                 </AccordionDetails>
                 <AccordionActions>
@@ -178,7 +203,8 @@ export default function FuncionesOfPeliculaPage() {
         </Paper>
 
 
-      )}
+      )
+      }
 
     </div >
   )

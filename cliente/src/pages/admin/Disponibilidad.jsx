@@ -38,7 +38,7 @@ export default function Disponibilidad() {
             setLoading(true);
             try {
                 const { data } = await obtenerPeliculas("1", "50");
-                setPeliculas(data.peliculas.filter(peli => peli.disponibilidad === 1));
+                setPeliculas(data.peliculas);
                 setLoading(false);
             } catch (error) {
                 setLoading(false);

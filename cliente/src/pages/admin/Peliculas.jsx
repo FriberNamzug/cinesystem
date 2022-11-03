@@ -99,7 +99,10 @@ export default function Peliculas() {
               {peliculas.map((pelicula) => (
                 <TableRow key={pelicula.id_pelicula}>
                   <TableCell>
-                    <img src={`${url}/peliculas/${pelicula.imagenes.urls[0].url}`} alt={pelicula.titulo} className="w-20 h-20" />
+                    <img
+                      src={pelicula.imagenes.default ? `${pelicula.imagenes.url}` : `${url}/${pelicula.imagenes.urls[0].url}`}
+                      alt={pelicula.titulo}
+                      className="w-20 h-20" />
                   </TableCell>
                   <TableCell>{pelicula.titulo}</TableCell>
                   <TableCell>{pelicula.sinopsis}</TableCell>

@@ -64,7 +64,8 @@ export default function AddFuncion({ close, update }) {
         try {
             if (e.target.id === "peliculas") {
                 const response = await buscarPeliculas("1", "50", e.target.value);
-                setPeliculas(response.data.peliculas);
+                const peliculasDisponibles = response.data.peliculas.filter(pelicula => pelicula.disponibilidad === 1);
+                setPeliculas(peliculasDisponibles);
             }
         } catch (error) {
             console.log(error);
