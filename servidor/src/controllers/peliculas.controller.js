@@ -13,11 +13,11 @@ export const getPeliculasFull = async (req, res) => {
         const offset = (pagina - 1) * limite;
 
         /* Recuperamos el total de peliculas */
-        const total = await pool.query("SELECT COUNT(*) FROM peliculas");
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE status = 1");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
 
         /* Recuperamos las peliculas */
-        const peliculas = await pool.query("SELECT * FROM peliculas LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const peliculas = await pool.query("SELECT * FROM peliculas WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
 
         /* Buscamos  de la pelicula por su id y se la agregamos */
         for (let i = 0; i < peliculas[0].length; i++) {
@@ -30,12 +30,16 @@ export const getPeliculasFull = async (req, res) => {
             const idiomas = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
 
             const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
-
+            //Las peliculas que no tienen imagenes ponemos una url por defecto
+            if (imagenes[0].length === 0) {
+                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+            } else {
+                peliculas[0][i].imagenes = { default: false, urls: imagenes[0] }
+            }
             peliculas[0][i].generos = generos[0];
             peliculas[0][i].actores = actores[0];
             peliculas[0][i].directores = directores[0];
             peliculas[0][i].idiomas = idiomas[0];
-            peliculas[0][i].imagenes = imagenes[0];
 
         }
 
@@ -63,23 +67,19 @@ export const getPeliculas = async (req, res) => {
         const { pagina, limite } = req.query;
         if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
         const offset = (pagina - 1) * limite;
-        const total = await pool.query("SELECT COUNT(*) FROM peliculas");
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE status = 1");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
         const peliculas = await pool.query("SELECT * FROM peliculas WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
         if (!peliculas[0]) return res.status(404).json({ message: "No se encontraron peliculas" });
 
-
         for (let i = 0; i < peliculas[0].length; i++) {
             const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
-            //Las peliculas que no tienen imagenes ponemos una url por defecto
             if (imagenes[0].length === 0) {
-                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png" }];
+                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
             } else {
-                peliculas[0][i].imagenes = imagenes[0];
+                peliculas[0][i].imagenes = { default: false, urls: imagenes[0] };
             }
         }
-
-
 
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
@@ -110,7 +110,13 @@ export const getPelicula = async (req, res) => {
 
         const idiomas = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [id]);
 
-        const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [id]);
+        let imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [id]);
+
+        if (imagenes[0].length === 0) {
+            imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+        } else {
+            imagenes[0] = { default: false, urls: imagenes[0] };
+        }
 
         const peliculaCompleta = {
             id_pelicula: pelicula[0][0].id_pelicula,
@@ -128,14 +134,82 @@ export const getPelicula = async (req, res) => {
             imagenes: imagenes[0],
         }
 
-
         res.status(200).json(peliculaCompleta);
-
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
 
+    }
+}
+
+export const getPeliculaByGenero = async (req, res) => {
+    try {
+        const { id_genero } = req.params;
+        const genero = await pool.query("SELECT * FROM generos WHERE id_genero = ? AND status = 1", [id_genero]);
+        if (genero[0].length === 0) return res.status(400).json({ message: "El género no existe" });
+
+        const peliculas = await pool.query("SELECT * FROM peliculas WHERE id_pelicula IN (SELECT id_pelicula FROM peliculas_generos WHERE id_genero = ?) AND status = 1", [id_genero]);
+        if (peliculas[0].length === 0) return res.status(400).json({ message: "No hay películas con ese género" });
+
+        for (let i = 0; i < peliculas[0].length; i++) {
+            const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
+            if (imagenes[0].length === 0) {
+                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+            } else {
+                peliculas[0][i].imagenes = { default: false, urls: imagenes[0] };
+            }
+        }
+
+        res.status(200).json({
+            genero: genero[0][0].nombre,
+            peliculas: peliculas[0]
+        });
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
+    }
+}
+
+export const getPeliculaWithFunction = async (req, res) => {
+    const { id_pelicula } = req.params;
+    const { pagina, limite } = req.query;
+    if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+    const offset = (pagina - 1) * limite;
+
+    try {
+        const [pelicula] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ? AND status = 1", [id_pelicula]);
+        if (pelicula.length === 0) return res.status(404).json({ message: "La película no existe" });
+        let imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [id_pelicula]);
+        if (imagenes[0].length === 0) {
+            imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+        } else {
+            imagenes[0] = { default: false, urls: imagenes[0] };
+        }
+
+        const total = await pool.query("SELECT COUNT(*) FROM funciones WHERE id_pelicula =  ? AND status = 1", [id_pelicula]);
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+
+        const funciones = await pool.query("SELECT id_pelicula,id_funcion,aforo,sala,horario,desde,hasta,status,costo_boleto FROM funciones WHERE id_pelicula = ? AND status = 1 LIMIT ? OFFSET ?", [id_pelicula, Number(limite), Number(offset)]);
+
+
+        if (funciones[0].length === 0) return res.status(404).json({ message: "No existen funciones para esta pelicula" });
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+
+            pelicula: {
+                ...pelicula[0],
+                imagenes: imagenes[0]
+            },
+            funciones: funciones[0]
+        });
+
+    } catch (error) {
+        logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
+        res.status(500).json({ message: "Error del servidor" });
     }
 }
 
@@ -152,8 +226,6 @@ export const searchPeliculas = async (req, res) => {
         if (peliculas[0].length === 0) return res.status(404).json({ message: "No se encontraron películas" });
 
         res.status(200).json({ totalPaginas, peliculas: peliculas[0] });
-
-
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
@@ -420,11 +492,35 @@ export const deletePelicula = async (req, res) => {
 }
 
 export const getDisponibilidad = async (req, res) => {
-    try {
-        const estatus = await pool.query("SELECT * FROM peliculas WHERE disponibilidad = 1 AND status = 1");
-        if (estatus[0].length === 0) return res.status(400).json({ message: "No hay películas disponibles" });
+    const { pagina, limite } = req.query;
+    if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+    const offset = (pagina - 1) * limite;
 
-        res.json(estatus[0]);
+    try {
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE disponibilidad = 1 AND status = 1");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+
+        const peliculas = await pool.query("SELECT * FROM peliculas WHERE status = 1 AND disponibilidad = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (!peliculas[0]) return res.status(404).json({ message: "No se encontraron peliculas" });
+
+        for (let i = 0; i < peliculas[0].length; i++) {
+            const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
+            //Las peliculas que no tienen imagenes ponemos una url por defecto
+            if (imagenes[0].length === 0) {
+                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+            } else {
+                peliculas[0][i].imagenes = { default: false, urls: imagenes[0] };
+            }
+        }
+
+        res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
+            peliculas: peliculas[0],
+        });
+
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
@@ -460,3 +556,5 @@ export const updateDisponibilidad = async (req, res) => {
     }
 
 }
+
+

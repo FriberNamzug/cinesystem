@@ -8,11 +8,13 @@ const router = Router();
 
 router.get('/search/', peliculas.searchPeliculas);
 router.get("/p/full/", peliculas.getPeliculasFull)
+router.get("/p/genero/:id_genero", peliculas.getPeliculaByGenero)
+router.get("/p/funciones/:id_pelicula", peliculas.getPeliculaWithFunction)
 router.get("/p/", peliculas.getPeliculas)
 router.get("/:id", peliculas.getPelicula)
 
-router.get("/estatus/disponibilidad", verifyToken, verifyAdminUser, peliculas.getDisponibilidad)
-router.put("/estatus/disponibilidad/:id_pelicula", verifyToken, verifyAdminUser, peliculas.updateDisponibilidad)
+router.get("/p/disponibilidad", peliculas.getDisponibilidad)
+router.put("/p/disponibilidad/:id_pelicula", verifyToken, verifyAdminUser, peliculas.updateDisponibilidad)
 
 router.post("/", verifyToken, verifyAdminUser, peliculas.createPelicula)
 router.put("/:id_pelicula", verifyToken, verifyAdminUser, peliculas.updatePelicula)
