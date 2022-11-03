@@ -75,7 +75,7 @@ export const getPeliculas = async (req, res) => {
         for (let i = 0; i < peliculas[0].length; i++) {
             const imagenes = await pool.query("SELECT url FROM peliculas_imagenes WHERE id_pelicula = ?", [peliculas[0][i].id_pelicula]);
             if (imagenes[0].length === 0) {
-                peliculas[0][i].imagenes = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+                peliculas[0][i].imagenes = { url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true };
             } else {
                 peliculas[0][i].imagenes = { default: false, urls: imagenes[0] };
             }

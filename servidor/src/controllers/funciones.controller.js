@@ -16,7 +16,16 @@ export const getFuncion = async (req, res) => {
         const [funciones] = await pool.query("SELECT * FROM funciones WHERE status = 1 AND id_funcion = ?", [id_funcion]);
         if (funciones.length === 0) return res.status(404).json({ message: "No existe la función" });
         const [pelicula] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ?", [funciones[0].id_pelicula]);
-        res.status(200).json({ funcion: funciones[0], pelicula: pelicula[0] });
+        const imagenes = await pool.query("SELECT * FROM peliculas_imagenes WHERE id_pelicula = ?", [funciones[0].id_pelicula]);
+
+        //Si no hay imagenes, se envia una imagen por defecto
+        if (imagenes[0].length === 0) {
+            imagenes[0] = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+        } else {
+            imagenes[0] = { default: false, urls: imagenes[0] };
+        }
+
+        res.status(200).json({ funcion: funciones[0], pelicula: pelicula[0], imagenes: imagenes[0] });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
