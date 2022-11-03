@@ -1,6 +1,8 @@
 import { Outlet } from "react-router-dom";
 import NavbarDashboard from "./NavbarDashboard";
 
+import Box from "@mui/material/Box";
+
 const RoutesDashboard = () => {
     return (
         <div className="flex flex-row">
@@ -10,7 +12,10 @@ const RoutesDashboard = () => {
 
             <div className="bg-gradient-to-r from-gray-100 to-gray-300 w-full">
                 <div className="mx-5">
-                    <Outlet />
+                    <Box sx={{ 'user-select': 'none' }}>
+
+                        <Outlet />
+                    </Box>
                 </div>
             </div>
         </div>

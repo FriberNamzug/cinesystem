@@ -13,6 +13,8 @@ import TheatersIcon from '@mui/icons-material/Theaters';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import HomeIcon from "@mui/icons-material/Home";
+import EventSeatIcon from '@mui/icons-material/EventSeat';
+
 
 import { toast } from "react-toastify";
 
@@ -61,7 +63,7 @@ export default function NavbarDashboard() {
 
                                     <li className="my-2">
                                         <NavLink
-                                            to="./"
+                                            to="../"
                                             className={style.home}
                                         >
                                             <span className="">Inicio</span>
@@ -70,6 +72,15 @@ export default function NavbarDashboard() {
 
                                     {permissions === "Usuario" && (
                                         <>
+                                            <li className="my-2">
+                                                <NavLink
+                                                    to="./funcion"
+                                                    className={({ isActive }) => isActive ? style.activate : style.disable}
+                                                >
+                                                    <span className="">Ver funciones</span>
+                                                </NavLink>
+                                            </li>
+
                                             <li className="my-2">
                                                 <NavLink
                                                     to="./tickets"
@@ -150,7 +161,7 @@ export default function NavbarDashboard() {
 
                                     <li className="my-2">
                                         <NavLink
-                                            to="./"
+                                            to="../"
                                             className={style.home}
                                         >
                                             <HomeIcon />
@@ -159,6 +170,14 @@ export default function NavbarDashboard() {
 
                                     {permissions === "Usuario" && (
                                         <>
+                                            <li className="my-2">
+                                                <NavLink
+                                                    to="./funcion"
+                                                    className={({ isActive }) => isActive ? style.activate : style.disable}
+                                                >
+                                                    <EventSeatIcon />
+                                                </NavLink>
+                                            </li>
                                             <li className="my-2">
                                                 <NavLink
                                                     to="./tickets"

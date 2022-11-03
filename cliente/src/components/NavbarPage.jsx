@@ -6,6 +6,7 @@ import { Collapse } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import CategoryIcon from '@mui/icons-material/Category';
 import LoginIcon from '@mui/icons-material/Login';
+import EventSeatIcon from '@mui/icons-material/EventSeat';
 
 import Menu from '@mui/icons-material/Menu';
 
@@ -22,6 +23,24 @@ export default function NavbarPage() {
 
     const [menu, setMenu] = useState(false);
     const [responsive, setResponsive] = useState(true);
+
+    const [permissions, setPermissions] = useState("none");
+    const [flag, setFlag] = useState(0);
+
+
+    useEffect(() => {
+        if (localStorage.getItem("permissions") === null) {
+            if (flag < 3) {
+                setTimeout(() => {
+                    setFlag(flag + 1);
+                }, 500);
+            } else {
+                setPermissions("none");
+            }
+        } else {
+            setPermissions(localStorage.getItem("permissions"));
+        }
+    }, [flag]);
 
     useEffect(() => {
         if (!responsive) {
@@ -70,17 +89,26 @@ export default function NavbarPage() {
                     </Link>
                 </li>
 
+
                 <li className={styles.li}>
-                    <Link to='/login' className={styles.a}>
-                        <span className={styles.title}>Mi cuenta</span>
-                        <LoginIcon className={styles.icon} />
+                    <Link to='/funciones' className={styles.a}>
+                        <span className={styles.title}>Funciones</span>
+                        <EventSeatIcon className={styles.icon} />
+                    </Link>
+                </li>
+                <li className={styles.li}>
+                    <Link to='/generos' className={styles.a}>
+                        <span className={styles.title}>Generos</span>
+                        <CategoryIcon className={styles.icon} />
                     </Link>
                 </li>
 
                 <li className={styles.li}>
-                    <Link to='/category' className={styles.a}>
-                        <span className={styles.title}>Categorias</span>
-                        <CategoryIcon className={styles.icon} />
+                    <Link to='/login' className={styles.a}>
+                        <span className={styles.title}>
+                            {permissions === "none" ? "Iniciar Sesión" : "Mi Cuenta"}
+                        </span>
+                        <LoginIcon className={styles.icon} />
                     </Link>
                 </li>
 
@@ -116,9 +144,22 @@ export default function NavbarPage() {
                 </li>
 
                 <li className={style.li}>
-                    <Link to='/category' className={style.a}>
-                        <span className={style.title}>Categorias</span>
+                    <Link to='/funciones' className={style.a}>
+                        <span className={style.title}>Funciones</span>
+                        <EventSeatIcon className={style.icon} />
+                    </Link>
+                </li>
+                <li className={style.li}>
+                    <Link to='/generos' className={style.a}>
+                        <span className={style.title}>Generos</span>
                         <CategoryIcon className={style.icon} />
+                    </Link>
+                </li>
+
+                <li className={styles.li}>
+                    <Link to='/login' className={styles.a}>
+                        <span className={styles.title}>Mi cuenta</span>
+                        <LoginIcon className={styles.icon} />
                     </Link>
                 </li>
             </ul>
