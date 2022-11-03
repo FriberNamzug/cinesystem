@@ -16,6 +16,7 @@ import idiomasRoutes from './routes/idiomas.routes.js'
 import uploadsRoutes from './routes/uploads.routes.js'
 import funcionesRoutes from './routes/funciones.routes.js'
 import paymentsRoutes from './routes/payments.routes.js'
+import boletosRoutes from './routes/boletos.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
@@ -47,6 +48,7 @@ app.use("/idiomas", idiomasRoutes);
 app.use("/uploads", uploadsRoutes);
 app.use("/funciones", funcionesRoutes);
 app.use("/payments", paymentsRoutes);
+app.use("/boletos", boletosRoutes);
 
 /* Ejecutamos un cron schedule cada 25 minutos */
 cron.schedule('*/25 * * * *', () => {
