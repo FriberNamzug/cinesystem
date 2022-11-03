@@ -7,7 +7,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MovieIcon from '@mui/icons-material/Movie';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import PeopleIcon from '@mui/icons-material/People';
-import TimelineIcon from '@mui/icons-material/Timeline';
 import TheatersIcon from '@mui/icons-material/Theaters';
 
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -90,14 +89,7 @@ export default function NavbarDashboard() {
                                                 </NavLink>
                                             </li>
 
-                                            <li className="my-2">
-                                                <NavLink
-                                                    to="./history"
-                                                    className={({ isActive }) => isActive ? style.activate : style.disable}
-                                                >
-                                                    <span className="">Historial</span>
-                                                </NavLink>
-                                            </li>
+  
                                         </>
                                     )}
 
@@ -186,14 +178,7 @@ export default function NavbarDashboard() {
                                                     <TheatersIcon />
                                                 </NavLink>
                                             </li>
-                                            <li className="my-2">
-                                                <NavLink
-                                                    to="./history"
-                                                    className={({ isActive }) => isActive ? style.activate : style.disable}
-                                                >
-                                                    <TimelineIcon />
-                                                </NavLink>
-                                            </li>
+
                                         </>
                                     )}
 

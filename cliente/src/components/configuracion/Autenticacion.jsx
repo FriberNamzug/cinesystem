@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { LinearProgress, TextField, Button } from "@mui/material"
+import { CircularProgress, TextField, Button } from "@mui/material"
 
 import { crear2FA, eliminar2FA } from '../../services/auth'
 import { obtenerUsuario } from '../../services/usuarios'
@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 
 export default function Autenticacion() {
 
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [usuario, setUsuario] = useState({})
     const [password, setPassword] = useState('')
     const [qr, setQr] = useState()
@@ -20,8 +20,10 @@ export default function Autenticacion() {
             try {
                 const { data } = await obtenerUsuario(token)
                 setUsuario(data)
+                setLoading(false)
                 console.log(data)
             } catch (error) {
+                setLoading(false)
                 console.log(error)
             }
         }
@@ -68,60 +70,63 @@ export default function Autenticacion() {
 
     return (
         <div>
-            <h1 className="text-center text-3xl mb-4">Autenticación</h1>
-            <div>
-                {usuario.twoFactor === 1 ? (
-                    <p>Usted tiene activada la autenticación de dos factores, para desactivarla, ingrese su contraseña y haga click en el botón "Desactivar autenticación de dos factores".</p>) : (
-                    <p>Usted no tiene activada la autenticación de dos factores, para activarla, ingrese su contraseña y haga click en el botón "Activar autenticación de dos factores".</p>)
-                }
-            </div>
+            {loading && (<div className="flex justify-center items-center"><CircularProgress /></div>)}
 
-            <div>
-                {qr && <img src={qr} alt="qr" />}
+            {!loading && (
+                <>
+                    <h1 className="text-center text-3xl mb-4">Autenticación</h1>
+                    <div>
+                        {usuario.twoFactor === 1 ? (
+                            <p>Usted tiene activada la autenticación de dos factores, para desactivarla, ingrese su contraseña y haga click en el botón "Desactivar autenticación de dos factores".</p>) : (
+                            <p>Usted no tiene activada la autenticación de dos factores, para activarla, ingrese su contraseña y haga click en el botón "Activar autenticación de dos factores".</p>)
+                        }
+                    </div>
 
-                {usuario.twoFactor === 1 ? (
-                    <form className='flex flex-col w-full' onSubmit={handleDelete}>
-                        <TextField
-                            label="Contraseña"
-                            type="password"
-                            disabled={loading}
-                            value={password || ''}
-                            onChange={(e) => setPassword(e.target.value)}
-                            margin="normal"
-                            variant="outlined"
-                            required
-                        />
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            fullWidth
-                        >Desactivar autenticación de dos factores</Button>
-                    </form>
-                ) : (
-                    <form className='flex flex-col w-full' onSubmit={handleSubmit}>
-                        <TextField
-                            label="Contraseña"
-                            type="password"
-                            disabled={loading}
-                            value={password || ''}
-                            onChange={(e) => setPassword(e.target.value)}
-                            margin="normal"
-                            variant="outlined"
-                            required
-                        />
+                    <div>
+                        {qr && <img src={qr} alt="qr" />}
 
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            fullWidth
-                        >Activar autenticación de dos factores</Button>
-                    </form>
+                        {usuario.twoFactor === 1 ? (
+                            <form className='flex flex-col w-full' onSubmit={handleDelete}>
+                                <TextField
+                                    label="Contraseña"
+                                    type="password"
+                                    disabled={loading}
+                                    value={password || ''}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    margin="normal"
+                                    variant="outlined"
+                                    required
+                                />
+                                <Button
+                                    variant="contained"
+                                    type="submit"
+                                    fullWidth
+                                >Desactivar autenticación de dos factores</Button>
+                            </form>
+                        ) : (
+                            <form className='flex flex-col w-full' onSubmit={handleSubmit}>
+                                <TextField
+                                    label="Contraseña"
+                                    type="password"
+                                    disabled={loading}
+                                    value={password || ''}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    margin="normal"
+                                    variant="outlined"
+                                    required
+                                />
+                                <Button
+                                    variant="contained"
+                                    type="submit"
+                                    fullWidth
+                                >Activar autenticación de dos factores</Button>
+                            </form>
+                        )}
 
-                )}
-
-
-
-            </div>
+                    </div>
+                </>
+            )}
         </div>
+
     )
 }

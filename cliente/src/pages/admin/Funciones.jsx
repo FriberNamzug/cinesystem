@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from "react";
 import {
-  LinearProgress,
+  CircularProgress,
   Table,
   TableContainer,
   TableCell,
@@ -26,7 +26,7 @@ import { obtenerFunciones } from "../../services/funciones";
 
 export default function Funciones() {
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [update, setUpdate] = useState(false);
   const [funciones, setFunciones] = useState([]);
   const [funcion, setFuncion] = useState();
@@ -34,8 +34,6 @@ export default function Funciones() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-
-  const url = import.meta.env.VITE_RUTA_API;
 
   const handleOpenAdd = () => setOpenAdd(!openAdd);
   const handleOpenFuncion = (data) => { setOpenFuncion(!openFuncion); setFuncion(data); };
@@ -45,7 +43,6 @@ export default function Funciones() {
 
   useEffect(() => {
     const getFunciones = async () => {
-      setLoading(true);
       try {
         const { data } = await obtenerFunciones();
         console.log(data)
@@ -63,63 +60,66 @@ export default function Funciones() {
 
   return (
     <Fragment>
-      {loading && (<div className="w-full"><LinearProgress /></div>)}
+      {loading && (<div className="flex justify-center items-center h-screen"><CircularProgress /></div>)}
 
-      <div className="text-center m-5 w-full bg-slate-50 rounded-xl">
-        <div className="m-5">
-          <h1 className="text-3xl font-bold text-slate-900">Funciones</h1>
+
+      {!loading && (
+        <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
+            <h1 className="text-2xl font-bold">Funciones</h1>
+          </div>
+          <div className="flex flex-col items-center bg-white rounded-md shadow-md">
+            <Button
+              variant="contained"
+              fullWidth
+              margin="normal"
+              onClick={handleOpenAdd}>Agregar</Button>
+            <TableContainer >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Titulo</TableCell>
+                    <TableCell>Aforo</TableCell>
+                    <TableCell>Sala</TableCell>
+                    <TableCell>Horario</TableCell>
+                    <TableCell>Fechas</TableCell>
+                    <TableCell>Acciones</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {funciones.map((funcion) => (
+                    <TableRow key={funcion.id_funcion}>
+                      <TableCell>{funcion.id_pelicula}</TableCell>
+                      <TableCell>{funcion.aforo}</TableCell>
+                      <TableCell>{funcion.sala}</TableCell>
+                      <TableCell>{funcion.horario}</TableCell>
+                      <TableCell>{funcion.desde} - {funcion.hasta}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-row">
+                          <div className="m-2">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleOpenEdit(funcion)}
+                              startIcon={<EditIcon />}>Editar</Button>
+                          </div>
+                          <div className="m-2">
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleOpenDelete(funcion)}
+                              startIcon={<DeleteIcon />}>Deshabilitar</Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
         </div>
-        <div className="m-5">
-          <Button
-            variant="contained"
-            fullWidth
-            margin="normal"
-            onClick={handleOpenAdd}>Agregar</Button>
-        </div>
-        <TableContainer >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Titulo</TableCell>
-                <TableCell>Aforo</TableCell>
-                <TableCell>Sala</TableCell>
-                <TableCell>Horario</TableCell>
-                <TableCell>Fechas</TableCell>
-                <TableCell>Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {funciones.map((funcion) => (
-                <TableRow key={funcion.id_funcion}>
-                  <TableCell>{funcion.id_pelicula}</TableCell>
-                  <TableCell>{funcion.aforo}</TableCell>
-                  <TableCell>{funcion.sala}</TableCell>
-                  <TableCell>{funcion.horario}</TableCell>
-                  <TableCell>{funcion.desde} - {funcion.hasta}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-row">
-                      <div className="m-2">
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleOpenEdit(funcion)}
-                          startIcon={<EditIcon />}>Editar</Button>
-                      </div>
-                      <div className="m-2">
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleOpenDelete(funcion)}
-                          startIcon={<DeleteIcon />}>Deshabilitar</Button>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+      )}
 
 
       <Modal open={openAdd} >
