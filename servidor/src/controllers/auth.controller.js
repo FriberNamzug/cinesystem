@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import logger from "../config/logger.js";
 import { authenticator } from 'otplib';
-import { sendWhatsappMessage } from "../config/whatsapp.js";
+//import { sendWhatsappMessage } from "../config/whatsapp.js";
 import { APP_NAME, OAUTH_NAME, JWT_SECRET } from "../config/config.js";
 
 import QRCode from 'qrcode';
@@ -29,7 +29,7 @@ export const signIn = async (req, res) => {
 
             if (usuario[0].notificaciones === 1) {
                 const mensaje = "Se ha iniciado sesión en tu cuenta de " + APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
-                await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+                // await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 
             return res.json({ token, "twofa": false });
@@ -319,7 +319,7 @@ export const verificar2FA = async (req, res) => {
 
             if (usuario[0].notificaciones === 1) {
                 const mensaje = "Se ha iniciado sesión en tu cuenta de " + APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
-                await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
+                // await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 
             return res.json({ message: "Codigo correcto", token, twofa: true });

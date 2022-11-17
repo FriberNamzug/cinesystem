@@ -20,7 +20,7 @@ import boletosRoutes from './routes/boletos.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 
-import startWhatsapp from './config/whatsapp.js'
+//import startWhatsapp from './config/whatsapp.js'
 
 
 const app = express();
@@ -57,7 +57,7 @@ cron.schedule('*/25 * * * *', () => {
 });
 
 // Iniciamos el cliente de whatsapp
-startWhatsapp()
+//startWhatsapp()
 
 
 
