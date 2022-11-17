@@ -8,15 +8,15 @@ export const getDirectores = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM directores");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const directores = await pool.query("SELECT * FROM directores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
-        if (directores[0].length === 0) return res.status(404).json({ message: "No hay directores" });
+        const [directores] = await pool.query("SELECT * FROM directores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (directores.length === 0) return res.status(404).json({ message: "No hay directores" });
 
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            directores: directores[0],
+            directores: directores,
         });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
@@ -27,9 +27,9 @@ export const getDirectores = async (req, res) => {
 export const getDirector = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await pool.query('SELECT * FROM directores WHERE id_director = ?', [id]);
-        if (response[0].length === 0) return res.status(404).json({ message: "El director no existe" });
-        res.status(200).json(response[0]);
+        const [response] = await pool.query('SELECT * FROM directores WHERE id_director = ?', [id]);
+        if (response.length === 0) return res.status(404).json({ message: "El director no existe" });
+        res.status(200).json(response);
 
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
@@ -43,17 +43,17 @@ export const searchDirectores = async (req, res) => {
         if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
         const offset = (pagina - 1) * limite;
 
-        const total = await pool.query("SELECT COUNT(*) FROM directores WHERE nombre LIKE ? OR apellido LIKE ?", [`%${busqueda}%`, `%${busqueda}%`]);
+        const total = await pool.query("SELECT COUNT(*) FROM directores WHERE nombre LIKE ?", [`%${busqueda}%`]);
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const directores = await pool.query("SELECT * FROM directores WHERE status = 1 AND (nombre LIKE ? OR apellido LIKE ?) LIMIT ? OFFSET ?", [`%${busqueda}%`, `%${busqueda}%`, Number(limite), Number(offset)]);
-        if (directores[0].length === 0) return res.status(404).json({ message: "No hay directores" });
+        const [directores] = await pool.query("SELECT * FROM directores WHERE status = 1 AND (nombre LIKE ?) LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+        if (directores.length === 0) return res.status(404).json({ message: "No hay directores" });
 
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            directores: directores[0],
+            directores: directores,
         });
 
     } catch (error) {
@@ -64,16 +64,14 @@ export const searchDirectores = async (req, res) => {
 
 export const createDirector = async (req, res) => {
     try {
-        const { nombre, apellido } = req.body;
+        const { nombre } = req.body;
 
-        if (!nombre || !apellido) return res.status(400).json({ message: "Todos los campos son obligatorios" });
-        if (nombre.length > 45 || apellido.length > 45) return res.status(400).json({ message: "El nombre o el apellido no pueden tener más de 45 caracteres" });
+        if (!nombre ) return res.status(400).json({ message: "Todos los campos son obligatorios" });
+        if (nombre.length > 45) return res.status(400).json({ message: "El nombre no pueden tener más de 45 caracteres" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
-        if (!apellido.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El apellido no es válido" });
 
         const newDirector = {
             nombre,
-            apellido,
         }
 
         const response = await pool.query('INSERT INTO directores SET ?', [newDirector]);
@@ -97,21 +95,19 @@ export const createDirector = async (req, res) => {
 export const updateDirector = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, apellido } = req.body;
+        const { nombre } = req.body;
 
-        if (!nombre || !apellido) return res.status(400).json({ message: "Todos los campos son obligatorios" });
-        if (nombre.length > 45 || apellido.length > 45) return res.status(400).json({ message: "El nombre o el apellido no pueden tener más de 45 caracteres" });
+        if (!nombre ) return res.status(400).json({ message: "Todos los campos son obligatorios" });
+        if (nombre.length > 45 ) return res.status(400).json({ message: "El nombre no pueden tener más de 45 caracteres" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
-        if (!apellido.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El apellido no es válido" });
 
-        const director = await pool.query('SELECT nombre, apellido FROM directores WHERE id_director = ?', [id]);
+        const director = await pool.query('SELECT nombre FROM directores WHERE id_director = ?', [id]);
         if (director[0].length === 0) return res.status(404).json({ message: "El director no existe" });
 
-        if (director[0][0].nombre === nombre && director[0][0].apellido === apellido) return res.status(400).json({ message: "No se han realizado cambios" });
+        if (director[0][0].nombre === nombre) return res.status(400).json({ message: "No se han realizado cambios" });
 
         const newDirector = {
             nombre,
-            apellido,
         }
 
         const response = await pool.query('UPDATE directores SET ? WHERE id_director = ?', [newDirector, id]);

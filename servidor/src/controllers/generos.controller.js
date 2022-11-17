@@ -44,15 +44,15 @@ export const searchGeneros = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM generos WHERE nombre LIKE ?", [`%${busqueda}%`]);
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const generos = await pool.query("SELECT * FROM generos WHERE nombre LIKE ? AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
-        if (generos[0].length === 0) return res.status(404).json({ message: "No hay géneros" });
+        const [generos] = await pool.query("SELECT * FROM generos WHERE nombre LIKE ? AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+        if (generos.length === 0) return res.status(404).json({ message: "No hay géneros" });
 
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            generos: generos[0],
+            generos: generos,
         });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);

@@ -8,15 +8,15 @@ export const getActores = async (req, res) => {
         const offset = (pagina - 1) * limite;
         const total = await pool.query("SELECT COUNT(*) FROM actores");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const actores = await pool.query("SELECT * FROM actores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        const [actores] = await pool.query("SELECT * FROM actores WHERE status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
 
-        if (actores[0].length === 0) return res.status(404).json({ message: "No hay actores" });
+        if (actores.length === 0) return res.status(404).json({ message: "No hay actores" });
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            actores: actores[0],
+            actores: actores,
         });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
@@ -27,9 +27,9 @@ export const getActores = async (req, res) => {
 export const getActor = async (req, res) => {
     try {
         const { id } = req.params;
-        const actor = await pool.query("SELECT * FROM actores WHERE id_actor = ? AND status = 1", [id]);
-        if (actor[0].length === 0) return res.status(404).json({ message: "El actor no existe" });
-        res.json(actor[0]);
+        const [actor] = await pool.query("SELECT * FROM actores WHERE id_actor = ? AND status = 1", [id]);
+        if (actor.length === 0) return res.status(404).json({ message: "El actor no existe" });
+        res.status(200).json(actor);
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
@@ -42,17 +42,17 @@ export const searchActores = async (req, res) => {
         if (!pagina || !limite || !busqueda) return res.status(400).json({ error: "Faltan parámetros" });
         const offset = (pagina - 1) * limite;
 
-        const total = await pool.query("SELECT COUNT(*) FROM actores WHERE (nombre LIKE ? OR apellido LIKE ? OR CONCAT(nombre, ' ', apellido) LIKE ? OR CONCAT(apellido, ' ', nombre) LIKE ?) AND status = 1", [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]);
+        const total = await pool.query("SELECT COUNT(*) FROM actores WHERE (nombre LIKE ?) AND status = 1", [`%${busqueda}%`]);
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const actores = await pool.query("SELECT * FROM actores WHERE (nombre LIKE ? OR apellido LIKE ? OR CONCAT(nombre, ' ', apellido) LIKE ? OR CONCAT(apellido, ' ', nombre) LIKE ?) AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`, Number(limite), Number(offset)]);
-        if (actores[0].length === 0) return res.status(404).json({ message: "No hay actores" });
+        const [actores] = await pool.query("SELECT * FROM actores WHERE (nombre LIKE ? ) AND status = 1 LIMIT ? OFFSET ?", [`%${busqueda}%`, Number(limite), Number(offset)]);
+        if (actores.length === 0) return res.status(404).json({ message: "No hay actores" });
 
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            actores: actores[0],
+            actores: actores,
         });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
@@ -62,19 +62,14 @@ export const searchActores = async (req, res) => {
 
 export const createActor = async (req, res) => {
     try {
-        const { nombre, apellido, fecha_nacimiento } = req.body;
-        const fecha = new Date(fecha_nacimiento);
+        const { nombre } = req.body;
 
-        if (!nombre || !apellido || !fecha_nacimiento) return res.status(400).json({ message: "Todos los campos son obligatorios" });
-        if (nombre.length > 45 || apellido.length > 45) return res.status(400).json({ message: "El nombre o el apellido no pueden tener más de 45 caracteres" });
+        if (!nombre) return res.status(400).json({ message: "Todos los campos son obligatorios" });
+        if (nombre.length > 45) return res.status(400).json({ message: "El nombre no pueden tener más de 45 caracteres" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
-        if (!apellido.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El apellido no es válido" });
-        if (fecha.toString() === "Invalid Date") return res.status(400).json({ message: "La fecha de nacimiento no es válida" });
 
         const newActor = {
             nombre,
-            apellido,
-            fecha_nacimiento
         }
 
         const actor = await pool.query("INSERT INTO actores SET ?", [newActor]);
@@ -98,27 +93,20 @@ export const createActor = async (req, res) => {
 export const updateActor = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, apellido, fecha_nacimiento } = req.body;
-        const fecha = new Date(fecha_nacimiento);
+        const { nombre } = req.body;
 
-        if (!nombre || !apellido || !fecha_nacimiento) return res.status(400).json({ message: "Faltan campos" });
-        if (nombre.length > 45 || apellido.length > 45) return res.status(400).json({ message: "El nombre o el apellido no pueden tener más de 45 caracteres" });
+        if (!nombre) return res.status(400).json({ message: "Faltan campos" });
+        if (nombre.length > 45 || apellido.length > 45) return res.status(400).json({ message: "El nombre no pueden tener más de 45 caracteres" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
-        if (!apellido.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El apellido no es válido" });
-        if (fecha.toString() === "Invalid Date") return res.status(400).json({ message: "La fecha de nacimiento no es válida" });
 
-        const actor = await pool.query("SELECT id_actor, nombre, apellido, fecha_nacimiento FROM actores WHERE id_actor = ? AND status = 1", [id]);
+        const actor = await pool.query("SELECT id_actor, nombre FROM actores WHERE id_actor = ? AND status = 1", [id]);
         if (actor[0].length === 0) return res.status(404).json({ message: "El actor no existe" });
 
-        const fechaNacimiento = new Date(actor[0][0].fecha_nacimiento);
-        const fechaNacimientoString = `${fechaNacimiento.getFullYear()}-${fechaNacimiento.getMonth() + 1}-${fechaNacimiento.getDate()}`;
 
-        if (actor[0][0].nombre === nombre && actor[0][0].apellido === apellido && fechaNacimientoString === fecha_nacimiento.toString()) return res.status(400).json({ message: "No hay cambios" });
+        if (actor[0][0].nombre === nombre) return res.status(400).json({ message: "No hay cambios" });
 
         const actorActualizado = {
-            nombre: nombre || actor[0][0].nombre,
-            apellido: apellido || actor[0][0].apellido,
-            fecha_nacimiento: fecha_nacimiento || actor[0][0].fecha_nacimiento
+            nombre: nombre || actor[0][0].nombre
         }
 
         const actorUpdate = await pool.query("UPDATE actores SET ? WHERE id_actor = ?", [actorActualizado, id]);
@@ -129,8 +117,6 @@ export const updateActor = async (req, res) => {
             actor: {
                 id,
                 nombre,
-                apellido,
-                fecha_nacimiento
             }
         });
 

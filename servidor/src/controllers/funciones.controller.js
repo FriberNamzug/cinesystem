@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import logger from "../config/logger.js";
+import { IMAGEN_POR_DEFECTO } from "../config/config.js";
 
 export const getFunciones = async (req, res) => {
     try {
@@ -10,22 +11,19 @@ export const getFunciones = async (req, res) => {
         res.status(500).json({ message: "Error del servidor" });
     }
 }
+
 export const getFuncion = async (req, res) => {
     const { id_funcion } = req.params;
     try {
         const [funciones] = await pool.query("SELECT * FROM funciones WHERE status = 1 AND id_funcion = ?", [id_funcion]);
         if (funciones.length === 0) return res.status(404).json({ message: "No existe la función" });
         const [pelicula] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ?", [funciones[0].id_pelicula]);
-        const imagenes = await pool.query("SELECT * FROM peliculas_imagenes WHERE id_pelicula = ?", [funciones[0].id_pelicula]);
-
-        //Si no hay imagenes, se envia una imagen por defecto
-        if (imagenes[0].length === 0) {
-            imagenes[0] = [{ url: "https://i.ibb.co/7bQQYkX/no-image.png", default: true }];
+        if (pelicula[0].imagen === null) {
+            pelicula[0].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
         } else {
-            imagenes[0] = { default: false, urls: imagenes[0] };
+            pelicula[0].imagen = { default: false, url: pelicula[0].imagen };
         }
-
-        res.status(200).json({ funcion: funciones[0], pelicula: pelicula[0], imagenes: imagenes[0] });
+        res.status(200).json({ funcion: funciones[0], pelicula: pelicula[0] });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
@@ -87,7 +85,6 @@ export const updateFuncion = async (req, res) => {
         res.status(500).json({ message: "Error del servidor" });
     }
 }
-
 
 export const deshabilitarFuncion = async (req, res) => {
     const { id_funcion } = req.params;
