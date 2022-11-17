@@ -5,7 +5,12 @@ import { IMAGEN_POR_DEFECTO } from "../config/config.js";
 export const getFunciones = async (req, res) => {
     try {
         const [funciones] = await pool.query("SELECT * FROM funciones WHERE status = 1");
-        res.status(200).json(funciones);
+        const funcionesFiltradas = funciones.filter(funcion => funcion.hasta > new Date());
+
+        res.status(200).json(
+            funcionesFiltradas
+        );
+
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });

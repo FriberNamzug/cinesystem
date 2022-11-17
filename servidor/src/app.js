@@ -19,6 +19,7 @@ import paymentsRoutes from './routes/payments.routes.js'
 import boletosRoutes from './routes/boletos.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
+import { cleanFunciones } from './util/scheduled/clean_funciones_disables.js'
 
 //import startWhatsapp from './config/whatsapp.js'
 
@@ -50,11 +51,18 @@ app.use("/funciones", funcionesRoutes);
 app.use("/payments", paymentsRoutes);
 app.use("/boletos", boletosRoutes);
 
-/* Ejecutamos un cron schedule cada 25 minutos */
-cron.schedule('*/25 * * * *', () => {
-    console.log('Limpiando usuarios - ejecucion cada 25 minutos');
+/* Ejecutamos cada 24 hrs */
+cron.schedule('0 0 * * *', () => {
+    console.log('Limpiando funciones - ejecucion cada 30 minutos');
+    cleanFunciones();
     cleanUsers();
+
 });
+
+
+cleanFunciones();
+cleanUsers();
+
 
 // Iniciamos el cliente de whatsapp
 //startWhatsapp()

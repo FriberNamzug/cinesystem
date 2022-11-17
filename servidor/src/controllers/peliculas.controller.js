@@ -180,7 +180,7 @@ export const getPeliculaWithFunction = async (req, res) => {
         if (pelicula[0].imagen === null) {
             pelicula[0].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
         } else {
-            pelicula[0].imagen = { default: false, urls: pelicula[0].imagen };
+            pelicula[0].imagen = { default: false, url: pelicula[0].imagen };
         }
 
         const total = await pool.query("SELECT COUNT(*) FROM funciones WHERE id_pelicula =  ? AND status = 1", [id_pelicula]);
@@ -484,17 +484,10 @@ export const deletePelicula = async (req, res) => {
 }
 
 export const getDisponibilidad = async (req, res) => {
-    const { pagina, limite } = req.query;
-    if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
-    const offset = (pagina - 1) * limite;
-
     try {
-        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE disponibilidad = 1 AND status = 1");
-        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const [peliculas] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula IN (SELECT id_pelicula FROM funciones WHERE status = 1) AND status = 1");
 
-        const [peliculas] = await pool.query("SELECT * FROM peliculas WHERE status = 1 AND disponibilidad = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
-        if (!peliculas) return res.status(404).json({ message: "No se encontraron peliculas" });
-
+        //Si no tiene imagenes, se le asigna una por defecto
         for (let i = 0; i < peliculas.length; i++) {
             if (peliculas[i].imagen === null) {
                 peliculas[i].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
@@ -503,11 +496,8 @@ export const getDisponibilidad = async (req, res) => {
             }
         }
 
+
         res.status(200).json({
-            total: total[0][0]["COUNT(*)"],
-            totalPaginas,
-            limite: Number(limite),
-            pagina: Number(pagina),
             peliculas: peliculas,
         });
 

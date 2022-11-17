@@ -19,6 +19,11 @@ export const cleanUsers = async () => {
             })
         }
 
+        //Mensaje de log
+        logger.info("Se han eliminado los usuarios que no han verificado su email")
+        //mensaje de consola
+        console.log("Se han eliminado los usuarios que no han verificado su email")
+
     } catch (error) {
         logger.error(`${error.message} - cleanUsers - clean_disabled_users.js`)
         console.log(`Ocurrió un error en el servidor: ${error})`)
