@@ -88,13 +88,14 @@ export const createOrder = async (req, res) => {
                 Authorization: `Bearer ${access_token}`,
             }
         })
+        console.log(response)
         res.json({
             message: 'Order created',
             order: response.data.links[1].href
         });
     } catch (error) {
         console.log(error);
-        res.json({ message: 'Error creating order' });
+        res.json({ message: 'Error creating order', PAYPAL_API_HOST, order });
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
     }
 
@@ -130,7 +131,7 @@ export const captureOrder = async (req, res) => {
         const hora = new Date().toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\:/g, '-');
 
         const html = ordenDeCompra(usuario[0].nombre, folio, fecha, hora, pelicula[0].titulo, funcion[0].costo_boleto);
-        sendMail(req, process.env.MAILER_USER, usuario[0].email, "Orden de compra", html);
+        sendMail(req, usuario[0].email, "Orden de compra", html);
 
         res.status(200).json({
             message: 'Pago completado',

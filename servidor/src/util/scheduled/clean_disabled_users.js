@@ -1,6 +1,7 @@
 import pool from "../../config/db.js"
 import logger from "../../config/logger.js"
 import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "../../config/config.js"
 
 export const cleanUsers = async () => {
     try {
@@ -10,7 +11,7 @@ export const cleanUsers = async () => {
         //Iteramos sobre cada usuario para verificar si el token es valido
         for (const user of users) {
             const token = user.token_email
-            jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            jwt.verify(token, JWT_SECRET, (err, decoded) => {
                 if (err) {
                     logger.error(err)
                     pool.query("DELETE FROM usuarios WHERE id_usuario = ?", [user.id_usuario])

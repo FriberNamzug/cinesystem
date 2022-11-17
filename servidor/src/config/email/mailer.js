@@ -1,12 +1,13 @@
 import nodemailer from "nodemailer";
 import logger from "../logger.js";
+import { MAIL_HOST, MAILER_USER, MAILER_PASS } from "../config.js";
 
 const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST,
+    host: MAIL_HOST,
     secure: true,
     auth: {
-        user: process.env.MAILER_USER,
-        pass: process.env.MAILER_PASS,
+        user: MAILER_USER,
+        pass: MAILER_PASS,
     },
 
 })

@@ -4,14 +4,10 @@ import pool from "../config/db.js";
 import logger from "../config/logger.js";
 import { authenticator } from 'otplib';
 import { sendWhatsappMessage } from "../config/whatsapp.js";
+import { APP_NAME, OAUTH_NAME, JWT_SECRET } from "../config/config.js";
 
 import QRCode from 'qrcode';
 import { sendMail, activarCuenta, recuperarPasswordEmail } from "../config/email/index.js";
-
-import {
-    JWT_SECRET,
-    JWT_EXPIRESIN
-} from "../config/config.js";
 
 export const signIn = async (req, res) => {
     try {
@@ -32,7 +28,7 @@ export const signIn = async (req, res) => {
             });
 
             if (usuario[0].notificaciones === 1) {
-                const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
+                const mensaje = "Se ha iniciado sesión en tu cuenta de " + APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
                 await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 
@@ -84,7 +80,7 @@ export const signUp = async (req, res) => {
         await pool.query("UPDATE usuarios SET token_email = ? WHERE id_usuario = ?", [token, newUser.insertId]);
 
         const html = activarCuenta(nombre, token);
-        sendMail(req, process.env.MAILER_USER, email, "Activar cuenta", html);
+        sendMail(req, email, "Activar cuenta", html);
 
         res.json({
             message: "Usuario registrado correctamente, por favor verifique su email para activar su cuenta, si no lo encuentra en su bandeja de entrada, revise su bandeja de spam, tienes 25 minutos para activar tu cuenta, de lo contrario deberás registrarte nuevamente",
@@ -143,7 +139,7 @@ export const reenviarEmail = async (req, res) => {
 
         const tokenUrl = user[0].token_email.replace(/\./g, "-");
         const html = activarCuenta(user[0].nombre, tokenUrl);
-        sendMail(req, process.env.MAILER_USER, email, "Activar cuenta", html);
+        sendMail(req, email, "Activar cuenta", html);
 
         res.status(200).json({ message: "Email enviado correctamente" });
 
@@ -170,7 +166,7 @@ export const recuperarPassword = async (req, res) => {
         if (response[0].affectedRows === 0) return res.status(400).json({ message: "No se ha podido enviar el email" });
 
         const html = recuperarPasswordEmail(user[0].nombre, token);
-        sendMail(req, process.env.MAILER_USER, email, "Recuperar contraseña", html);
+        sendMail(req, email, "Recuperar contraseña", html);
 
         res.status(200).json({ message: "Email enviado correctamente" });
 
@@ -257,7 +253,7 @@ export const crear2FA = async (req, res) => {
         if (!validPassword) return res.status(400).json({ message: "La contraseña no es correcta" });
 
         const secret = authenticator.generateSecret();
-        const url = authenticator.keyuri(user[0].email, process.env.OAUTH_NAME, secret);
+        const url = authenticator.keyuri(user[0].email, OAUTH_NAME, secret);
         const qr = await QRCode.toDataURL(url);
         await pool.query("UPDATE usuarios SET secret_oauth = ?, two_factor = 1 WHERE id_usuario = ?", [secret, id]);
         res.json({ qr });
@@ -302,7 +298,7 @@ export const verificar2FA = async (req, res) => {
 
         const jwtCode = accessToken.split(' ')[1]
 
-        const verify = jwt.verify(jwtCode, process.env.JWT_SECRET, (err, user) => {
+        const verify = jwt.verify(jwtCode, JWT_SECRET, (err, user) => {
             if (err) return false
             return user
         })
@@ -322,7 +318,7 @@ export const verificar2FA = async (req, res) => {
             });
 
             if (usuario[0].notificaciones === 1) {
-                const mensaje = "Se ha iniciado sesión en tu cuenta de " + process.env.APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
+                const mensaje = "Se ha iniciado sesión en tu cuenta de " + APP_NAME + " desde una nueva ubicación. Si no has sido tú, por favor cambia tu contraseña.";
                 await sendWhatsappMessage("+521" + usuario[0].telefono, mensaje);
             }
 

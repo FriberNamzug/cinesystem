@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import pool from '../config/db.js'
 import logger from '../config/logger.js'
+import { JWT_SECRET } from '../config/config.js'
 
 export const verifyToken = async (req, res, next) => {
 
@@ -8,7 +9,7 @@ export const verifyToken = async (req, res, next) => {
         const accessToken = req.headers['x-access-token'] || req.headers['authorization']
         if (!accessToken) return res.status(401).json({ message: 'No tienes autorización para estar aquí' })
         const token = accessToken.split(' ')[1]
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        jwt.verify(token, JWT_SECRET, (err, user) => {
             if (err) return res.status(401).json({ message: 'El token de acceso no es válido' })
             if (!user.login) return res.status(401).json({ message: 'El login no es válido' })
             req.user = user
