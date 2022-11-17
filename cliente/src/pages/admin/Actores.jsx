@@ -84,7 +84,6 @@ export default function Actores() {
               <TableRow>
                 <TableCell>Fotografia</TableCell>
                 <TableCell>Nombre</TableCell>
-                <TableCell>Apellido</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
 
@@ -93,10 +92,9 @@ export default function Actores() {
               {actores.map((actor) => (
                 <TableRow key={actor.id_actor}>
                   <TableCell>
-                    <img src={`${url}/${actor.foto}`} alt={actor.nombre} className="w-20 h-20" />
+                    <img src={`${url}/${actor.imagen}`} alt={actor.nombre} className="w-20 h-20" />
                   </TableCell>
                   <TableCell>{actor.nombre}</TableCell>
-                  <TableCell>{actor.apellido}</TableCell>
                   <TableCell>
                     <div className="flex flex-row">
                       <div className="m-2">

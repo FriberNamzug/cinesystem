@@ -69,7 +69,7 @@ export default function FuncionesOfPeliculaPage() {
         const response = await obtenerPeliculasConFunciones(id_pelicula, "1", "50")
         setPeliculas(response.data.pelicula)
         setFunciones(response.data.funciones)
-        setImagenes(response.data.pelicula.imagenes)
+        setImagenes(response.data.pelicula.imagen)
         console.log(response.data)
         setLoading(true)
       } catch (error) {
@@ -99,7 +99,7 @@ export default function FuncionesOfPeliculaPage() {
           elevation={3}
           className="flex flex-col justify-center items-center w-full p-4"
           sx={{
-            backgroundImage: `url(${imagenes.default ? imagenes.url : url + imagenes.urls[0].url})`,
+            backgroundImage: `url(${imagenes.default ? imagenes.url : url + imagenes.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',

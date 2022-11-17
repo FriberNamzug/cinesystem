@@ -4,12 +4,16 @@ import Card from '../../components/Card'
 import { Link } from "react-router-dom"
 
 
-import { buscarPeliculas } from '../../services/peliculas'
+import { buscarPeliculas, obtenerPeliculas } from '../../services/peliculas'
 
 import { obtenerGeneros } from '../../services/generos'
 
+const url = import.meta.env.VITE_RUTA_API;
+
+
 export default function Index() {
     const [generos, setGeneros] = useState([])
+    const [peliculas, setPeliculas] = useState([])
 
     useEffect(() => {
         const getGeneros = async () => {
@@ -17,7 +21,14 @@ export default function Index() {
             setGeneros(response.data.generos)
             console.log(response.data.generos)
         }
+        const getPeliculas = async () => {
+            const response = await obtenerPeliculas("1", "50")
+            setPeliculas(response.data.peliculas)
+            console.log(response.data.peliculas)
+        }
+
         getGeneros()
+        getPeliculas()
     }, [])
 
 
@@ -28,23 +39,17 @@ export default function Index() {
                 <div className="col-span-1 md:col-span-9">
                     <div className="bg-slate-700 bg-opacity-60 rounded-b-xl">
                         <div className="flex flex-col justify-center items-center h-full">
-                            <h2 className="text-4xl font-bold text-white">Bienvenido a la página principal</h2>
-                            <h3 className='text-2xl font-bold text-white'>Te mostramos las peliculas globales del momento</h3>
-                            <h4 className='text-2xl font-bold text-white'>Si quieres ver nuestra cartelera ve a funciones o da click
-                                <Link to={"/funciones"} >
-                                    <span className='text-blue-500'>
-                                        {" Aqui"}
-                                    </span>
-                                </Link>
-                            </h4>
                         </div>
 
                         <div className='flex flex-row flex-wrap justify-center'>
-                            {
-                                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => {
-                                    return <Card key={index} />
-                                })
-                            }
+                            {peliculas.map((pelicula) => (
+                                <Card
+                                    key={pelicula.id_pelicula}
+                                    pelicula={pelicula}
+                                    botonTxt={"Ver mas"}
+                                    img={pelicula.imagen.default ? pelicula.imagen.url : url + pelicula.imagen.url}
+                                />
+                            ))}
                         </div>
 
 

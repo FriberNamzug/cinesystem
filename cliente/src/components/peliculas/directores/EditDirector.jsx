@@ -12,7 +12,6 @@ import { actualizarDirector } from "../../../services/directores";
 export default function EditDirector({ director, close, update }) {
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState(director.nombre);
-  const [apellido, setApellido] = useState(director.apellido);
   const [token] = useState(window.localStorage.getItem("token"));
 
   const handleSubmit = async (e) => {
@@ -20,8 +19,7 @@ export default function EditDirector({ director, close, update }) {
     setLoading(true);
     try {
       const response = await actualizarDirector(token, director.id_director, {
-        nombre,
-        apellido,
+        nombre
       });
       toast.success(response.data.message);
       update();
@@ -53,13 +51,6 @@ export default function EditDirector({ director, close, update }) {
             variant="outlined"
             value={nombre || ""}
             onChange={(e) => setNombre(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            label="Apellido"
-            variant="outlined"
-            value={apellido || ""}
-            onChange={(e) => setApellido(e.target.value)}
             margin="normal"
           />
           <Button

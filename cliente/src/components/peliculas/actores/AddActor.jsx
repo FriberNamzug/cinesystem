@@ -15,8 +15,6 @@ import { subirImagenActor } from "../../../services/updates";
 export default function AddActor({ close, update }) {
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [fecha_nacimiento, setFecha_nacimiento] = useState("");
   const [image, setImage] = useState("");
   const [token] = useState(window.localStorage.getItem("token"));
 
@@ -24,7 +22,7 @@ export default function AddActor({ close, update }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await crearActor(token, { nombre, apellido, fecha_nacimiento });
+      const response = await crearActor(token, { nombre });
       toast.success(response.data.message);
       if (image) {
         console.log("subiendo imagen");
@@ -61,24 +59,6 @@ export default function AddActor({ close, update }) {
             margin="normal"
             type="text"
           />
-          <TextField
-            label="Apellido"
-            variant="outlined"
-            value={apellido || ""}
-            onChange={(e) => setApellido(e.target.value)}
-            margin="normal"
-            type="text"
-          />
-          <FormControl component="fieldset" margin="normal">
-            <FormLabel component="legend">Fecha de Nacimiento</FormLabel>
-            <TextField
-              variant="outlined"
-              value={fecha_nacimiento || ""}
-              onChange={(e) => setFecha_nacimiento(e.target.value)}
-              type="date"
-            />
-          </FormControl>
-
           <FormControl component="fieldset" margin="normal">
             <FormLabel component="legend">Fotografia del actor(opcional)</FormLabel>
             <TextField

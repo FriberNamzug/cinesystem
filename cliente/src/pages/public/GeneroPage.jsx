@@ -21,6 +21,8 @@ export default function GeneroPage() {
     const [loading, setLoading] = useState(false)
     const [peliculas, setPeliculas] = useState([])
 
+    const url = import.meta.env.VITE_RUTA_API;
+
 
     useEffect(() => {
         const getPeliculas = async () => {
@@ -58,7 +60,12 @@ export default function GeneroPage() {
                             <div className='flex flex-row flex-wrap justify-center'>
                                 {
                                     peliculas.peliculas.map((item, index) => {
-                                        return <Card key={index} pelicula={item} />
+                                        return <Card
+                                            key={index}
+                                            pelicula={item}
+                                            botonTxt={"Ver mas"}
+                                            img={item.imagen.default ? item.imagen.url : url + item.imagen.url}
+                                        />
                                     })
                                 }
                             </div>

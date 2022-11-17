@@ -35,8 +35,6 @@ export default function Directores() {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
-  const url = import.meta.env.VITE_RUTA_API;
-
   const handleOpenAdd = () => setOpenAdd(!openAdd);
   const handleOpenDirector = (data) => { setOpenDirector(!openDirector); setDirector(data); };
   const handleOpenEdit = (data) => { setOpenEdit(!openEdit); setDirector(data); };
@@ -83,7 +81,6 @@ export default function Directores() {
             <TableHead>
               <TableRow>
                 <TableCell>Nombre</TableCell>
-                <TableCell>Apellido</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -91,7 +88,6 @@ export default function Directores() {
               {directores.map((director) => (
                 <TableRow key={director.id_director}>
                   <TableCell>{director.nombre}</TableCell>
-                  <TableCell>{director.apellido}</TableCell>
                   <TableCell>
                     <div className="flex flex-row">
                       <div className="m-2">

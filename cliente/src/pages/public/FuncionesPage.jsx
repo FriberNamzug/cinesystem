@@ -20,9 +20,11 @@ export default function FuncionesPage() {
     const [loading, setLoading] = useState(false)
     const [peliculas, setPeliculas] = useState([])
 
+    const url = import.meta.env.VITE_RUTA_API;
+
     useEffect(() => {
         const getPeliculas = async () => {
-            const response = await obtenerPeliculasConDisponibilidad("1", "50")
+            const response = await obtenerPeliculasConDisponibilidad()
             setPeliculas(response.data.peliculas)
             console.log(response.data.peliculas)
             setLoading(true)
@@ -40,19 +42,18 @@ export default function FuncionesPage() {
 
             {loading && (
 
-                <Paper sx={{ p: 2, margin: 'auto', maxWidth: 500, flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {peliculas.map((pelicula) => (
-                            <Card
-                                key={pelicula.id_pelicula}
-                                pelicula={pelicula}
-                                botonTxt={"Ver funciones"}
-                                botonUrl={pelicula.id_pelicula}
-                            />
-                        ))}
-                    </Box>
-                </Paper>
+                <div className='flex flex-row flex-wrap justify-center'>
+                    {peliculas.map((pelicula) => (
+                        <Card
+                            key={pelicula.id_pelicula}
+                            pelicula={pelicula}
+                            botonTxt={"Ver funciones"}
+                            botonUrl={pelicula.id_pelicula}
+                            img={pelicula.imagen.default ? pelicula.imagen.url : url + pelicula.imagen.url}
+                        />
+                    ))}
 
+                </div>
             )}
 
 

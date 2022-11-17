@@ -13,14 +13,13 @@ import { crearDirector } from "../../../services/directores";
 export default function AddDirector({ close, update }) {
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
   const [token] = useState(window.localStorage.getItem("token"));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await crearDirector(token, { nombre, apellido });
+      const response = await crearDirector(token, { nombre });
       toast.success(response.data.message);
       update();
       close();
@@ -51,14 +50,6 @@ export default function AddDirector({ close, update }) {
             onChange={(e) => setNombre(e.target.value)}
             margin="normal"
           />
-          <TextField
-            label="Apellido"
-            variant="outlined"
-            value={apellido || ""}
-            onChange={(e) => setApellido(e.target.value)}
-            margin="normal"
-          />
-
           <Button
             variant="contained"
             type="submit"

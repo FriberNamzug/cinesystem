@@ -100,7 +100,7 @@ export default function Peliculas() {
                 <TableRow key={pelicula.id_pelicula}>
                   <TableCell>
                     <img
-                      src={pelicula.imagenes.default ? `${pelicula.imagenes.url}` : `${url}/${pelicula.imagenes.urls[0].url}`}
+                      src={pelicula.imagen.default ? `${pelicula.imagen.url}` : `${url}/${pelicula.imagen.url}`}
                       alt={pelicula.titulo}
                       className="w-20 h-20" />
                   </TableCell>

@@ -16,9 +16,6 @@ export default function EditActor({ actor, close, update }) {
   const [loading, setLoading] = useState(false);
   const [token] = useState(window.localStorage.getItem("token"));
   const [nombre, setNombre] = useState(actor.nombre);
-  const [apellido, setApellido] = useState(actor.apellido);
-  //The specified value "2019-10-10T05:00:00.000Z" pasamos el valor a formato yyyy-MM-dd"
-  const [fecha_nacimiento, setFecha_nacimiento] = useState(actor.fecha_nacimiento.split("T")[0]);
   const [image, setImage] = useState();
 
   const url = import.meta.env.VITE_RUTA_API;
@@ -27,8 +24,8 @@ export default function EditActor({ actor, close, update }) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (nombre !== actor.nombre || apellido !== actor.apellido || fecha_nacimiento !== actor.fecha_nacimiento.split("T")[0]) {
-        const response = await actualizarActor(token, actor.id_actor, { nombre, apellido, fecha_nacimiento });
+      if (nombre !== actor.nombre) {
+        const response = await actualizarActor(token, actor.id_actor, { nombre});
         toast.success(response.data.message);
       }
       if (image) {
@@ -71,30 +68,11 @@ export default function EditActor({ actor, close, update }) {
                 margin="normal"
                 type="text"
               />
-              <TextField
-                label="Apellido"
-                variant="outlined"
-                value={apellido || ""}
-                onChange={(e) => setApellido(e.target.value)}
-                margin="normal"
-                type="text"
-              />
-              <FormControl component="fieldset" margin="normal">
-                <FormLabel component="legend">Fecha de Nacimiento</FormLabel>
-                <TextField
-                  variant="outlined"
-                  value={fecha_nacimiento || ""}
-                  onChange={(e) => setFecha_nacimiento(e.target.value)}
-                  margin="normal"
-                  type="date"
-                />
-              </FormControl>
-
             </div>
             <div className="m-5">
               <img
                 alt={`${url}/${image}`}
-                src={image ? URL.createObjectURL(image) : `${url}/${actor.foto}`}
+                src={image ? URL.createObjectURL(image) : `${url}/${actor.imagen}`}
                 className="w-36 h-36 object-cover"
               />
               <FormControl component="fieldset" margin="normal">
