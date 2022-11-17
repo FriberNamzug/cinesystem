@@ -22,7 +22,7 @@ console.log('IP del servidor: ' + IP)
 export const PORT = process.env.PORT
 export const JWT_SECRET = process.env.JWT_SECRET
 export const JWT_EXPIRESIN = process.env.JWT_EXPIRESIN
-export const CLIENTE = 'http://' + IP + ':' + '3000'
+export const CLIENTE = process.env.CLIENTE
 export const APP_NAME = process.env.APP_NAME
 
 //Database
