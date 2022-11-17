@@ -1,4 +1,4 @@
-import pkg from 'whatsapp-web.js'
+/* import pkg from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal'
 import logger from "../config/logger.js";
 
@@ -49,12 +49,11 @@ export const sendWhatsappMessage = async (numero, mensaje) => {
 }
 
 
-
-
-
-
-
-
-
-
 export default startWhatsapp
+ */
+
+
+
+
+
+
