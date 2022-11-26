@@ -69,64 +69,64 @@ export default function Usuarios() {
     <Fragment>
       {loading && (<div className="w-full"><LinearProgress /></div>)}
 
-      <div className="text-center m-5 w-full bg-slate-50 rounded-xl">
-        <div className="m-5">
-          <h1 className="text-3xl font-bold text-slate-900">Usuarios</h1>
+      <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center">
+          <h1 className="text-2xl font-bold">Usuarios</h1>
         </div>
-        <div className="m-5">
+        <div className="flex flex-col items-center bg-white rounded-md shadow-md">
           <Button
             variant="contained"
             fullWidth
             margin="normal"
             onClick={handleOpenAdd}>Agregar</Button>
-        </div>
 
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Telefono</TableCell>
-                <TableCell>Rol</TableCell>
-                <TableCell>Acciones</TableCell>
-              </TableRow>
-
-            </TableHead>
-
-            <TableBody>
-              {usuarios.map((usuario) => (
-                <TableRow key={usuario.id_usuario}>
-                  <TableCell>{usuario.id_usuario}</TableCell>
-                  <TableCell>{usuario.nombre}</TableCell>
-                  <TableCell>{usuario.email}</TableCell>
-                  <TableCell>{usuario.telefono}</TableCell>
-                  <TableCell>{usuario.nombre_rol}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-row">
-                      <div className="m-2">
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleOpenEdit(usuario)}
-                          startIcon={<EditIcon />}>Editar</Button>
-                      </div>
-                      <div className="m-2">
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleOpenDelete(usuario)}
-                          startIcon={<DeleteIcon />}>Eliminar</Button>
-                      </div>
-                    </div>
-                  </TableCell>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Telefono</TableCell>
+                  <TableCell>Rol</TableCell>
+                  <TableCell>Acciones</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
 
-          </Table>
-        </TableContainer>
+              </TableHead>
+
+              <TableBody>
+                {usuarios.map((usuario) => (
+                  <TableRow key={usuario.id_usuario}>
+                    <TableCell>{usuario.id_usuario}</TableCell>
+                    <TableCell>{usuario.nombre}</TableCell>
+                    <TableCell>{usuario.email}</TableCell>
+                    <TableCell>{usuario.telefono}</TableCell>
+                    <TableCell>{usuario.nombre_rol}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-row">
+                        <div className="m-2">
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleOpenEdit(usuario)}
+                            startIcon={<EditIcon />}>Editar</Button>
+                        </div>
+                        <div className="m-2">
+                          <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleOpenDelete(usuario)}
+                            startIcon={<DeleteIcon />}>Eliminar</Button>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+
+            </Table>
+          </TableContainer>
+        </div>
       </div>
       <Modal open={openAdd}>
         <div style={styleModal}>
