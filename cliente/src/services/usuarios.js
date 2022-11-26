@@ -38,3 +38,43 @@ export const updatePassword = async (token, password) => {
         }
     });
 }
+
+export const obtenerTodosLosUsuarios = async (token) => {
+    return await axios.get(`/usuarios/a/`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+export const agregarUsuario = async (token, usuario) => {
+    return await axios.post(`/usuarios/a/`, usuario, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
+
+export const obtenerRoles = async (token) => {
+    return await axios.get(`/roles/`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
+
+export const editarUsuario = async (token, usuario) => {
+    return await axios.put(`/usuarios/a/${usuario.id}`, usuario, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
+
+export const borrarUsuario = async (token, id) => {
+    return await axios.delete(`/usuarios/a/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
