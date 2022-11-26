@@ -52,7 +52,7 @@ export default function Peliculas() {
       setLoading(true);
       try {
         const { data } = await obtenerPeliculas("1", "50");
-        console.log(data)
+        //console.log(data)
         setPeliculas(data.peliculas);
         setLoading(false);
       } catch (error) {
@@ -139,7 +139,7 @@ export default function Peliculas() {
       </div>
       <Modal open={openPelicula} >
         <div style={styleModal}>
-          <ShowPelicula pelicula={pelicula} close={handleOpenPelicula} />
+          <ShowPelicula pelicula={pelicula} close={handleOpenPelicula} update={handleUpdate} />
         </div>
       </Modal>
       <Modal open={openAdd}>

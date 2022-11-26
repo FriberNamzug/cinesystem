@@ -30,13 +30,11 @@ export default function Funciones() {
   const [update, setUpdate] = useState(false);
   const [funciones, setFunciones] = useState([]);
   const [funcion, setFuncion] = useState();
-  const [openFuncion, setOpenFuncion] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
   const handleOpenAdd = () => setOpenAdd(!openAdd);
-  const handleOpenFuncion = (data) => { setOpenFuncion(!openFuncion); setFuncion(data); };
   const handleOpenEdit = (data) => { setOpenEdit(!openEdit); setFuncion(data); };
   const handleOpenDelete = (data) => { setOpenDelete(!openDelete); setFuncion(data); };
   const handleUpdate = () => setUpdate(!update);

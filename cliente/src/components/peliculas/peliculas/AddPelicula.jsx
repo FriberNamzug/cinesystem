@@ -214,7 +214,7 @@ export default function AddPelicula({ close, update }) {
                             <TextField
                                 variant="outlined"
                                 name="fecha_estreno"
-                                value={pelicula.fecha_estreno.split("-").reverse().join("-")}
+                                value={pelicula.fecha_estreno}
                                 onChange={handleChange}
                                 type="date"
                                 required
