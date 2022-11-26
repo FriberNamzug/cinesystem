@@ -45,8 +45,7 @@ export default function Funciones() {
     const getFunciones = async () => {
       try {
         const { data } = await obtenerFunciones();
-        console.log(data)
-        setFunciones(data);
+        setFunciones(data.sort((a, b) => b.id_funcion - a.id_funcion));
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -78,6 +77,7 @@ export default function Funciones() {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell>ID Funcion</TableCell>
                     <TableCell>Titulo</TableCell>
                     <TableCell>Aforo</TableCell>
                     <TableCell>Sala</TableCell>
@@ -89,11 +89,12 @@ export default function Funciones() {
                 <TableBody>
                   {funciones.map((funcion) => (
                     <TableRow key={funcion.id_funcion}>
-                      <TableCell>{funcion.id_pelicula}</TableCell>
+                      <TableCell>{funcion.id_funcion}</TableCell>
+                      <TableCell>{funcion.titulo}</TableCell>
                       <TableCell>{funcion.aforo}</TableCell>
                       <TableCell>{funcion.sala}</TableCell>
                       <TableCell>{funcion.horario}</TableCell>
-                      <TableCell>{funcion.desde} - {funcion.hasta}</TableCell>
+                      <TableCell>{new Date(funcion.desde).toLocaleDateString()} - {new Date(funcion.hasta).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex flex-row">
                           <div className="m-2">

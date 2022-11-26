@@ -89,7 +89,6 @@ export default function Peliculas() {
                 <TableCell>Titulo</TableCell>
                 <TableCell>Sinopsis</TableCell>
                 <TableCell>Fecha Estreno</TableCell>
-                <TableCell>Torrent</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
 
@@ -106,8 +105,7 @@ export default function Peliculas() {
                   </TableCell>
                   <TableCell>{pelicula.titulo}</TableCell>
                   <TableCell>{pelicula.sinopsis}</TableCell>
-                  <TableCell>{pelicula.fecha_estreno}</TableCell>
-                  <TableCell>{pelicula.torrent}</TableCell>
+                  <TableCell>{new Date(pelicula.fecha_estreno).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex flex-row">
                       <div className="m-2">

@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from "react";
 import {
-  LinearProgress,
+  CircularProgress,
   Table,
   TableContainer,
   TableCell,
@@ -67,67 +67,69 @@ export default function Usuarios() {
 
   return (
     <Fragment>
-      {loading && (<div className="w-full"><LinearProgress /></div>)}
+      {loading && (<div className="flex justify-center items-center h-screen"><CircularProgress /></div>)}
 
-      <div className="flex flex-col items-center">
+      {!loading && (
         <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-bold">Usuarios</h1>
-        </div>
-        <div className="flex flex-col items-center bg-white rounded-md shadow-md">
-          <Button
-            variant="contained"
-            fullWidth
-            margin="normal"
-            onClick={handleOpenAdd}>Agregar</Button>
+          <div className="flex flex-col items-center">
+            <h1 className="text-2xl font-bold">Usuarios</h1>
+          </div>
+          <div className="flex flex-col items-center bg-white rounded-md shadow-md">
+            <Button
+              variant="contained"
+              fullWidth
+              margin="normal"
+              onClick={handleOpenAdd}>Agregar</Button>
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Telefono</TableCell>
-                  <TableCell>Rol</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-
-              </TableHead>
-
-              <TableBody>
-                {usuarios.map((usuario) => (
-                  <TableRow key={usuario.id_usuario}>
-                    <TableCell>{usuario.id_usuario}</TableCell>
-                    <TableCell>{usuario.nombre}</TableCell>
-                    <TableCell>{usuario.email}</TableCell>
-                    <TableCell>{usuario.telefono}</TableCell>
-                    <TableCell>{usuario.nombre_rol}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-row">
-                        <div className="m-2">
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleOpenEdit(usuario)}
-                            startIcon={<EditIcon />}>Editar</Button>
-                        </div>
-                        <div className="m-2">
-                          <Button
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleOpenDelete(usuario)}
-                            startIcon={<DeleteIcon />}>Eliminar</Button>
-                        </div>
-                      </div>
-                    </TableCell>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Nombre</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Telefono</TableCell>
+                    <TableCell>Rol</TableCell>
+                    <TableCell>Acciones</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
 
-            </Table>
-          </TableContainer>
+                </TableHead>
+
+                <TableBody>
+                  {usuarios.map((usuario) => (
+                    <TableRow key={usuario.id_usuario}>
+                      <TableCell>{usuario.id_usuario}</TableCell>
+                      <TableCell>{usuario.nombre}</TableCell>
+                      <TableCell>{usuario.email}</TableCell>
+                      <TableCell>{usuario.telefono}</TableCell>
+                      <TableCell>{usuario.nombre_rol}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-row">
+                          <div className="m-2">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleOpenEdit(usuario)}
+                              startIcon={<EditIcon />}>Editar</Button>
+                          </div>
+                          <div className="m-2">
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleOpenDelete(usuario)}
+                              startIcon={<DeleteIcon />}>Eliminar</Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+
+              </Table>
+            </TableContainer>
+          </div>
         </div>
-      </div>
+      )}
       <Modal open={openAdd}>
         <div style={styleModal}>
           <AddUsuario close={handleOpenAdd} update={handleUpdate} />
