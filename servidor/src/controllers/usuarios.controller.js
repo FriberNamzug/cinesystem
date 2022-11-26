@@ -141,8 +141,9 @@ export const updatePassword = async (req, res) => {
 
 export const getUsuariosA = async (req, res) => {
     try {
-        const usuarios = await pool.query("SELECT * FROM usuarios");
-        res.json(usuarios[0]);
+        const [usuarios] = await pool.query("SELECT u.id_usuario, u.nombre, u.email, u.telefono, r.nombre AS nombre_rol, r.id_rol FROM usuarios u INNER JOIN rol_usuarios r ON u.id_rol = r.id_rol WHERE u.status = 1");
+        if (usuarios.length === 0) return res.status(404).json({ message: "No hay usuarios" });
+        res.json(usuarios);
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error interno del servidor" });
@@ -165,33 +166,32 @@ export const getUsuarioA = async (req, res) => {
 export const updateUsuarioA = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, email } = req.body;
+        const { nombre, email, rol } = req.body;
 
-
-        if (!nombre || !email) return res.status(400).json({ message: "Faltan campos" });
+        if (id == req.user.id) return res.status(400).json({ message: "No puedes actualizar tu propio usuario" });
+        if (!nombre || !email || !rol) return res.status(400).json({ message: "Faltan campos" });
         if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
         if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
 
+        const [usuario] = await pool.query("SELECT id_usuario, nombre, email, id_rol FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
+        if (usuario.length === 0) return res.status(404).json({ message: "El usuario no existe" });
 
-        const usuario = await pool.query("SELECT id_usuario FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
-        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        if (usuario[0].nombre === nombre && usuario[0].email === email && usuario[0].id_rol === Number(rol)) return res.status(400).json({ message: "No hay cambios" });
 
-        const usuarioActual = await pool.query("SELECT nombre, email FROM usuarios WHERE id_usuario = ?", [id]);
-        if (usuarioActual[0][0].nombre === nombre && usuarioActual[0][0].email === email) return res.status(400).json({ message: "No hay cambios" });
-
-        if (usuarioActual[0][0].email !== email) {
+        if (usuario[0].email !== email) {
             const emailExistente = await pool.query("SELECT email FROM usuarios WHERE email = ? AND status = 1", [email]);
             if (emailExistente[0].length > 0) return res.status(400).json({ message: "El email ya esta registrado" });
         }
 
-        await pool.query("UPDATE usuarios SET nombre = ?, email = ? WHERE id_usuario = ?", [nombre, email, id]);
+        await pool.query("UPDATE usuarios SET nombre = ?, email = ?, id_rol = ? WHERE id_usuario = ?", [nombre, email, rol, id]);
         res.json({
             message: "Usuario actualizado",
             usuario: {
                 id,
                 nombre,
-                email
+                email,
+                rol
             }
         });
 
@@ -205,8 +205,9 @@ export const deleteUsuarioA = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const usuario = await pool.query("SELECT id_usuario FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
-        if (usuario[0].length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        const [usuario] = await pool.query("SELECT id_usuario, id_rol FROM usuarios WHERE id_usuario = ? AND status = 1", [id]);
+        if (usuario.length === 0) return res.status(404).json({ message: "El usuario no existe" });
+        if (usuario[0].id_rol === 1) return res.status(400).json({ message: "No puedes eliminar al administrador" });
 
         await pool.query("UPDATE usuarios SET status = 0 WHERE id_usuario = ?", [id]);
         res.json({ message: "Usuario eliminado" });
@@ -219,23 +220,29 @@ export const deleteUsuarioA = async (req, res) => {
 
 export const createUsuarioA = async (req, res) => {
     try {
-        const { nombre, email, password } = req.body;
-        //Validaciones de los datos que se traen
-        if (!nombre || !email || !password) return res.status(400).json({ msg: "Por favor, ingrese todos los campos" });
+        const { nombre, email, password, rol } = req.body;
+
+        if (!nombre || !email || !password || !rol) return res.status(400).json({ message: "Por favor, ingrese todos los campos" });
         if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) return res.status(400).json({ message: "El email no es válido" });
         if (!nombre.match(/^[a-zA-ZÀ-ÿ\s]{1,40}$/)) return res.status(400).json({ message: "El nombre no es válido" });
-        if (nombre.length > 45 || email.length > 45) return res.status(400).json({ msg: "El nombre o el email no pueden tener más de 45 caracteres" });
-        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ msg: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if (nombre.length > 45 || email.length > 45) return res.status(400).json({ message: "El nombre o el email no pueden tener más de 45 caracteres" });
+        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)) return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, un carácter especial y un número" });
+        if (isNaN(rol)) return res.status(400).json({ message: "El rol no es válido" });
         const user = await pool.query("SELECT email FROM usuarios WHERE email = ?", [email]);
-        if (user[0].length > 0) return res.status(400).json({ msg: "El usuario ya existe" });
+        if (user[0].length > 0) return res.status(400).json({ message: "Ya existe un usuario con el email ingresado" });
 
         //Encriptar la contraseña
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        //Tenemos que guardar el usuario anteriormente validado en la db
-        const [newUser] = await pool.query("INSERT INTO usuarios (nombre, email, password, id_rol) VALUES (?, ?, ?, ?) ", [nombre, email, passwordHash, 1]);
-
+        //Comprobamos los roles que existen en la base de datos
+        const [roles] = await pool.query("SELECT id_rol FROM rol_usuarios");
+        if (roles.length === 0) return res.status(400).json({ message: "No hay roles disponibles" });
+        console.log(roles);
+        console.log(rol)
+        const rolExistente = roles.find(r => r.id_rol === Number(rol));
+        if (!rolExistente) return res.status(400).json({ message: "El rol no existe" });
+        const [newUser] = await pool.query("INSERT INTO usuarios (nombre, email, password, id_rol, status) VALUES (?, ?, ?, ?, 1) ", [nombre, email, passwordHash, rol]);
 
         res.json({
             message: "Usuario creado",

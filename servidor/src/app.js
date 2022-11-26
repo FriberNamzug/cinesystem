@@ -17,6 +17,7 @@ import uploadsRoutes from './routes/uploads.routes.js'
 import funcionesRoutes from './routes/funciones.routes.js'
 import paymentsRoutes from './routes/payments.routes.js'
 import boletosRoutes from './routes/boletos.routes.js'
+import rolesRoutes from './routes/roles.routes.js'
 
 import { cleanUsers } from './util/scheduled/clean_disabled_users.js'
 import { cleanFunciones } from './util/scheduled/clean_funciones_disables.js'
@@ -50,6 +51,7 @@ app.use("/uploads", uploadsRoutes);
 app.use("/funciones", funcionesRoutes);
 app.use("/payments", paymentsRoutes);
 app.use("/boletos", boletosRoutes);
+app.use("/roles", rolesRoutes);
 
 /* Ejecutamos cada 24 hrs */
 cron.schedule('0 0 * * *', () => {
