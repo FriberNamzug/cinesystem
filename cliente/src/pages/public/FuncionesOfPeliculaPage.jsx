@@ -122,7 +122,8 @@ export default function FuncionesOfPeliculaPage() {
                   </Typography>
 
                   <Typography variant="body3" color="text.secondary">
-                    Fecha de estreno: {peliculas.fecha_estreno}
+                    {/* Convertimos la fecha de estreno a formato */}
+                    Fecha de estreno: {new Date(peliculas.fecha_estreno).toLocaleDateString()}
                   </Typography>
 
                 </Box>
@@ -138,11 +139,6 @@ export default function FuncionesOfPeliculaPage() {
           </Box>
 
           {funciones.map((item, index) => {
-            //Convertimos la fecha desde y hasta a formato dd/mm/yyyY 
-            const fechaDesde = new Date(item.desde)
-            const fechaHasta = new Date(item.hasta)
-            const fechaDesdeString = fechaDesde.getDate() + "/" + (fechaDesde.getMonth() + 1) + "/" + fechaDesde.getFullYear()
-            const fechaHastaString = fechaHasta.getDate() + "/" + (fechaHasta.getMonth() + 1) + "/" + fechaHasta.getFullYear()
 
             return (
               <Accordion
@@ -168,10 +164,10 @@ export default function FuncionesOfPeliculaPage() {
                     Funcion disponible desde y hasta:
                   </Typography>
                   <Typography>
-                    Desde el dia: {fechaDesdeString}
+                    Desde el dia: {new Date(item.desde).toLocaleDateString()}
                   </Typography>
                   <Typography>
-                    Hasta el dia: {fechaHastaString}
+                    Hasta el dia: {new Date(item.hasta).toLocaleDateString()}
                   </Typography>
 
                   <Typography>
