@@ -38,7 +38,7 @@ export default function DeletePelicula({ pelicula, close, update }) {
                 />
             </div>
             <div>
-                <h1 className="text-center text-2xl font-bold"> Eliminar Idioma</h1>
+                <h1 className="text-center text-2xl font-bold"> Eliminar Pelicula</h1>
             </div>
             <div className="flex flex-col items-center justify-center m-5">
                 <h2 className="text-center text-2xl font-bold">¿Está seguro que desea eliminar la pelicula <span className="font-extrabold">{pelicula.titulo}</span>?</h2>
