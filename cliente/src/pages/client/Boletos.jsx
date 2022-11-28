@@ -9,10 +9,9 @@ import {
     TableRow,
     Button,
     Modal,
-    Paper,
-    Box,
+    Stack,
+    Pagination,
     Typography,
-    Divider,
 } from "@mui/material";
 
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -22,6 +21,9 @@ import { styleModal } from "../../components/stylesModal";
 import { toast } from "react-toastify";
 import { obtenerBoletos, obtenerBoleto } from "../../services/boletos";
 
+import SelectorPagina from "../../components/tabla/SelectorPagina";
+
+
 import QRCode from "react-qr-code";
 
 
@@ -29,26 +31,51 @@ export default function Boletos() {
     const [boletos, setBoletos] = useState([]);
     const [boleto, setBoleto] = useState("");
     const [loading, setLoading] = useState(true);
+    const [update, setUpdate] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const token = localStorage.getItem("token");
+
+    const [page, setPage] = useState(1);
+    const [count, setCount] = useState(5);
+    const [totalElementos, setTotalElementos] = useState(0);
+    const [vistas, setVistas] = useState(5);
+
+    const handleUpdate = () => setUpdate(!update);
+
 
     useEffect(() => {
         const getBoletos = async () => {
             try {
-                const { data } = await obtenerBoletos(token, "1", "50");
-                //Ordenamos los boletos por fecha de forma descendente
-                const resultadoOrdenado = data.boletos.sort((a, b) => {
-                    return new Date(b.fecha) - new Date(a.fecha);
-                });
-                setBoletos(resultadoOrdenado);
+                const { data } = await obtenerBoletos(token, page, vistas);
+                console.log(data)
+                setCount(data.totalPaginas);
+                setTotalElementos(data.total);
+                setBoletos(data.boletos);
                 setLoading(false);
-                console.log(resultadoOrdenado);
             } catch (error) {
                 toast.error("Error al obtener los boletos");
+                console.log(error);
             }
         }
         getBoletos();
-    }, []);
+    }, [update]);
+
+    const handlePagination = async (event, page) => {
+        console.log(page);
+        setLoading(true);
+        try {
+            const { data } = await obtenerBoletos(token, page, vistas);
+            setCount(data.totalPaginas);
+            setPage(data.pagina);
+            setBoletos(data.boletos);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            setBoletos([]);
+            console.log(error);
+            toast.info(error.response.data.message)
+        }
+    }
 
 
     return (
@@ -77,8 +104,7 @@ export default function Boletos() {
                                             const fecha = new Date(boleto.fecha);
                                             const fechaString = fecha.toLocaleDateString();
                                             return (
-                                                <TableRow key={boleto.id_boleto}>
-                                                    <TableCell>{boleto.id_boleto}</TableCell>
+                                                <TableRow key={boleto.id_boleto} sx={{ backgroundColor: fecha < new Date() ? "#fff000" : "" }} >                                                   <TableCell>{boleto.id_boleto}</TableCell>
                                                     <TableCell>{boleto.folio}</TableCell>
                                                     <TableCell>{fechaString}</TableCell>
                                                     <TableCell>{boleto.hora}</TableCell>
@@ -91,6 +117,7 @@ export default function Boletos() {
                                                                 setOpenModal(true);
                                                                 setBoleto(boleto.id_boleto);
                                                             }}
+                                                            disabled={fecha < new Date()}
                                                         >
                                                             Ver
                                                         </Button>
@@ -100,11 +127,18 @@ export default function Boletos() {
                                         })}
                                     </TableBody>
                                 </Table>
+                                <Stack spacing={2} alignItems={"center"}>
+                                    <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+                                    <div className="w-96">
+                                        <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+                                    </div>
+                                </Stack>
                             </TableContainer>
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             <Modal
                 open={openModal}
@@ -118,7 +152,7 @@ export default function Boletos() {
             </Modal>
 
 
-        </Fragment>
+        </Fragment >
     )
 }
 

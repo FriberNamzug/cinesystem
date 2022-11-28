@@ -9,6 +9,8 @@ import {
   TableRow,
   Button,
   Modal,
+  Stack,
+  Pagination
 } from "@mui/material";
 
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -20,6 +22,7 @@ import EditDirector from "../../components/peliculas/directores/EditDirector";
 import DeleteDirector from "../../components/peliculas/directores/DeleteDirector";
 import ShowDirector from "../../components/peliculas/directores/ShowDirector";
 import { styleModal } from "../../components/stylesModal";
+import SelectorPagina from "../../components/tabla/SelectorPagina";
 
 
 import { toast } from "react-toastify";
@@ -34,6 +37,10 @@ export default function Directores() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(5);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [vistas, setVistas] = useState(5);
 
   const handleOpenAdd = () => setOpenAdd(!openAdd);
   const handleOpenDirector = (data) => { setOpenDirector(!openDirector); setDirector(data); };
@@ -45,8 +52,10 @@ export default function Directores() {
     const getDirectores = async () => {
       setLoading(true);
       try {
-        const { data } = await obtenerDirectores("1", "50");
+        const { data } = await obtenerDirectores(page, vistas);
         console.log(data)
+        setCount(data.totalPaginas);
+        setTotalElementos(data.total);
         setDirectores(data.directores);
         setLoading(false);
       } catch (error) {
@@ -59,6 +68,21 @@ export default function Directores() {
     getDirectores();
   }, [update]);
 
+  const handlePagination = async (event, page) => {
+    console.log(page);
+    setLoading(true);
+    try {
+      const { data } = await obtenerDirectores(page, vistas);
+      setCount(data.totalPaginas);
+      setPage(data.pagina);
+      setDirectores(data.directores);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setActores([]);
+      toast.info(error.response.data.message)
+    }
+  }
 
   return (
     <Fragment>
@@ -117,6 +141,12 @@ export default function Directores() {
               ))}
             </TableBody>
           </Table>
+          <Stack spacing={2} alignItems={"center"}>
+            <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+            <div className="w-96">
+              <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+            </div>
+          </Stack>
         </TableContainer>
       </div>
 

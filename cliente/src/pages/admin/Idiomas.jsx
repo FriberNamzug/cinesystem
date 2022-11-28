@@ -9,6 +9,8 @@ import {
   TableRow,
   Button,
   Modal,
+  Stack,
+  Pagination
 } from "@mui/material";
 
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -21,6 +23,7 @@ import DeleteIdioma from "../../components/peliculas/idiomas/DeleteIdioma";
 import ShowIdioma from "../../components/peliculas/idiomas/ShowIdioma";
 
 import { styleModal } from "../../components/stylesModal";
+import SelectorPagina from "../../components/tabla/SelectorPagina";
 import { toast } from "react-toastify";
 import { obtenerIdiomas } from "../../services/idiomas";
 
@@ -35,6 +38,10 @@ export default function Idiomas() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(5);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [vistas, setVistas] = useState(5);
 
   const url = import.meta.env.VITE_RUTA_API;
 
@@ -49,12 +56,13 @@ export default function Idiomas() {
     const getIdiomas = async () => {
       setLoading(true);
       try {
-        const { data } = await obtenerIdiomas("1", "50");
+        const { data } = await obtenerIdiomas(page, vistas);
         console.log(data)
+        setCount(data.totalPaginas);
+        setTotalElementos(data.total);
         setIdiomas(data.idiomas);
         setLoading(false);
       } catch (error) {
-        setError(true);
         setLoading(false);
         setIdiomas([]);
         toast.info(error.response.data.message)
@@ -63,6 +71,21 @@ export default function Idiomas() {
     getIdiomas();
   }, [update]);
 
+  const handlePagination = async (event, page) => {
+    console.log(page);
+    setLoading(true);
+    try {
+      const { data } = await obtenerIdiomas(page, vistas);
+      setCount(data.totalPaginas);
+      setPage(data.pagina);
+      setIdiomas(data.idiomas);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setIdiomas([]);
+      toast.info(error.response.data.message)
+    }
+  }
 
 
   return (
@@ -122,6 +145,12 @@ export default function Idiomas() {
               ))}
             </TableBody>
           </Table>
+          <Stack spacing={2} alignItems={"center"}>
+            <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+            <div className="w-96">
+              <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+            </div>
+          </Stack>
         </TableContainer>
       </div>
 

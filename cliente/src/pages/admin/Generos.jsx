@@ -9,6 +9,8 @@ import {
   TableRow,
   Button,
   Modal,
+  Stack,
+  Pagination
 } from "@mui/material";
 
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -20,6 +22,7 @@ import EditGenero from "../../components/peliculas/generos/EditGenero";
 import DeleteGenero from "../../components/peliculas/generos/DeleteGenero";
 import ShowGenero from "../../components/peliculas/generos/ShowGenero";
 import { styleModal } from "../../components/stylesModal";
+import SelectorPagina from "../../components/tabla/SelectorPagina";
 
 import { toast } from "react-toastify";
 
@@ -34,6 +37,10 @@ export default function Generos() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(5);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [vistas, setVistas] = useState(5);
 
   const url = import.meta.env.VITE_RUTA_API;
 
@@ -47,8 +54,10 @@ export default function Generos() {
     const getGeneros = async () => {
       setLoading(true);
       try {
-        const { data } = await obtenerGeneros("1", "50");
+        const { data } = await obtenerGeneros(page, vistas);
         console.log(data)
+        setCount(data.totalPaginas);
+        setTotalElementos(data.total);
         setGeneros(data.generos);
         setLoading(false);
       } catch (error) {
@@ -60,6 +69,21 @@ export default function Generos() {
     getGeneros();
   }, [update]);
 
+  const handlePagination = async (event, page) => {
+    console.log(page);
+    setLoading(true);
+    try {
+      const { data } = await obtenerGeneros(page, vistas);
+      setCount(data.totalPaginas);
+      setPage(data.pagina);
+      setGeneros(data.generos);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setGeneros([]);
+      toast.info(error.response.data.message)
+    }
+  }
 
   return (
     <Fragment>
@@ -118,6 +142,12 @@ export default function Generos() {
               ))}
             </TableBody>
           </Table>
+          <Stack spacing={2} alignItems={"center"}>
+            <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+            <div className="w-96">
+              <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+            </div>
+          </Stack>
         </TableContainer>
       </div>
 

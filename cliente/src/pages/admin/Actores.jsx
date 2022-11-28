@@ -9,6 +9,8 @@ import {
   TableRow,
   Button,
   Modal,
+  Stack,
+  Pagination
 } from "@mui/material";
 
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -20,6 +22,7 @@ import EditActor from "../../components/peliculas/actores/EditActor";
 import DeleteActor from "../../components/peliculas/actores/DeleteActor";
 import ShowActor from "../../components/peliculas/actores/ShowActor";
 import { styleModal } from "../../components/stylesModal";
+import SelectorPagina from "../../components/tabla/SelectorPagina";
 
 import { toast } from "react-toastify";
 
@@ -34,6 +37,10 @@ export default function Actores() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(5);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [vistas, setVistas] = useState(5);
 
   const url = import.meta.env.VITE_RUTA_API;
 
@@ -47,12 +54,12 @@ export default function Actores() {
     const getActores = async () => {
       setLoading(true);
       try {
-        const { data } = await obtenerActores("1", "50");
-        console.log(data)
+        const { data } = await obtenerActores(page, vistas);
+        setCount(data.totalPaginas);
+        setTotalElementos(data.total);
         setActores(data.actores);
         setLoading(false);
       } catch (error) {
-        setError(true);
         setLoading(false);
         setActores([]);
         toast.info(error.response.data.message)
@@ -61,6 +68,23 @@ export default function Actores() {
     getActores();
   }, [update]);
 
+
+  const handlePagination = async (event, page) => {
+    console.log(page);
+    setLoading(true);
+    try {
+      const { data } = await obtenerActores(page, vistas);
+      setCount(data.totalPaginas);
+      setPage(data.pagina);
+      setActores(data.actores);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setActores([]);
+      console.log(error);
+      toast.info(error.response.data.message)
+    }
+  }
 
   return (
     <Fragment>
@@ -126,6 +150,12 @@ export default function Actores() {
 
 
           </Table>
+          <Stack spacing={2} alignItems={"center"}>
+            <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+            <div className="w-96">
+              <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+            </div>
+          </Stack>
         </TableContainer>
       </div>
 

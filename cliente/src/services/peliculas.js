@@ -12,8 +12,8 @@ export const obtenerPeliculasPorGenero = async (genero) => {
     return await axios.get(`/peliculas/p/genero/${genero}`);
 }
 
-export const obtenerPeliculasConDisponibilidad = async () => {
-    return await axios.get(`/peliculas/p/disponibilidad`);
+export const obtenerPeliculasConDisponibilidad = async (pagina, limite) => {
+    return await axios.get(`/peliculas/p/disponibilidad/?pagina=${pagina}&limite=${limite}`);
 }
 
 export const obtenerPeliculasConFunciones = async (id_pelicula, pagina, limite) => {

@@ -7,17 +7,17 @@ import {
     TableHead,
     TableBody,
     TableRow,
-    Button,
-    Modal,
     Switch,
-    FormControlLabel
+    FormControlLabel,
+    Stack,
+    Pagination
 } from "@mui/material";
 
 import { obtenerPeliculas } from "../../services/peliculas";
 import { updateDisponibilidad } from "../../services/peliculas";
 
 import { toast } from "react-toastify";
-import { styleModal } from "../../components/stylesModal";
+import SelectorPagina from "../../components/tabla/SelectorPagina";
 
 
 export default function Disponibilidad() {
@@ -26,9 +26,11 @@ export default function Disponibilidad() {
     const [desactivar, setDesactivar] = useState(false);
     const [update, setUpdate] = useState(false);
     const [peliculas, setPeliculas] = useState([]);
-    const [pelicula, setPelicula] = useState();
-    const [openDisponibilidad, setOpenDisponibilidad] = useState(false);
     const [token, setToken] = useState(window.localStorage.getItem('token'));
+    const [page, setPage] = useState(1);
+    const [count, setCount] = useState(5);
+    const [totalElementos, setTotalElementos] = useState(0);
+    const [vistas, setVistas] = useState(5);
 
     const url = import.meta.env.VITE_RUTA_API;
 
@@ -37,8 +39,10 @@ export default function Disponibilidad() {
         const getPelis = async () => {
             setLoading(true);
             try {
-                const { data } = await obtenerPeliculas("1", "50");
+                const { data } = await obtenerPeliculas(page, vistas);
                 setPeliculas(data.peliculas);
+                setCount(data.totalPaginas);
+                setTotalElementos(data.total);
                 setLoading(false);
             } catch (error) {
                 setLoading(false);
@@ -47,6 +51,23 @@ export default function Disponibilidad() {
         }
         getPelis();
     }, [update]);
+
+    const handlePagination = async (event, page) => {
+        console.log(page);
+        setLoading(true);
+        try {
+            const { data } = await obtenerPeliculas(page, vistas);
+            setCount(data.totalPaginas);
+            setPage(data.pagina);
+            setPeliculas(data.peliculas);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            setIdiomas([]);
+            toast.info(error.response.data.message)
+        }
+    }
+
 
 
     const handleUpdate = async (id_pelicula, checked) => {
@@ -105,6 +126,12 @@ export default function Disponibilidad() {
                             ))}
                         </TableBody>
                     </Table>
+                    <Stack spacing={2} alignItems={"center"}>
+                        <Pagination count={count} page={page} variant="outlined" shape="rounded" onChange={handlePagination} />
+                        <div className="w-96">
+                            <SelectorPagina count={count} totalElementos={totalElementos} setVistas={setVistas} vistas={vistas} update={handleUpdate} />
+                        </div>
+                    </Stack>
                 </TableContainer>
             </div>
 
