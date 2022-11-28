@@ -7,17 +7,17 @@ export const getBoletos = async (req, res) => {
         const { id } = req.user;
         if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
         const offset = (pagina - 1) * limite;
-        const total = await pool.query("SELECT COUNT(*) FROM boletos WHERE status = 1 AND id_usuario = ?", [id]);
+        const total = await pool.query("SELECT COUNT(*) FROM boletos WHERE status = 1 AND id_usuario = ? AND pagado = 1", [id]);
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
-        const boletos = await pool.query("SELECT * FROM boletos WHERE status = 1 AND id_usuario = ? LIMIT ? OFFSET ?", [id, Number(limite), Number(offset)]);
+        const [boletos] = await pool.query("SELECT * FROM boletos WHERE status = 1 AND id_usuario = ? AND pagado = 1 ORDER BY fecha DESC LIMIT ? OFFSET ?", [id, Number(limite), Number(offset)]);
+        if (boletos.length === 0) return res.status(404).json({ message: "No Boletos" });
 
-        if (boletos[0].length === 0) return res.status(404).json({ message: "No Boletos" });
         res.status(200).json({
             total: total[0][0]["COUNT(*)"],
             totalPaginas,
             limite: Number(limite),
             pagina: Number(pagina),
-            boletos: boletos[0]
+            boletos: boletos
         });
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);

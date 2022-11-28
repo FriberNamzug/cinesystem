@@ -6,7 +6,7 @@ export const getIdiomas = async (req, res) => {
         const { pagina, limite } = req.query;
         if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
         const offset = (pagina - 1) * limite;
-        const total = await pool.query("SELECT COUNT(*) FROM idiomas");
+        const total = await pool.query("SELECT COUNT(*) FROM idiomas WHERE status = 1");
         const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
         const idiomas = await pool.query("SELECT * FROM idiomas WHERE status = 1 LIMIT ? OFFSET ? ", [Number(limite), Number(offset)]);
 

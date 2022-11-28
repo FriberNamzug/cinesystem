@@ -4,7 +4,8 @@ import { IMAGEN_POR_DEFECTO } from "../config/config.js";
 
 export const getFunciones = async (req, res) => {
     try {
-        const [funciones] = await pool.query("SELECT * FROM funciones WHERE status = 1");
+        /* Hacemos un inner para obtener el nombre de la pelicula con el id_pelicula */
+        const [funciones] = await pool.query("SELECT * FROM funciones INNER JOIN peliculas ON funciones.id_pelicula = peliculas.id_pelicula WHERE funciones.status = 1");
         const funcionesFiltradas = funciones.filter(funcion => funcion.hasta > new Date());
 
         res.status(200).json(

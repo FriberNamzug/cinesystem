@@ -26,12 +26,12 @@ export const getPeliculasFull = async (req, res) => {
 
             const actores = await pool.query("SELECT actores.id_actor, actores.nombre, imagen FROM actores INNER JOIN peliculas_actores ON actores.id_actor = peliculas_actores.id_actor WHERE peliculas_actores.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
 
-            const directores = await pool.query("SELECT directores.id_director, directores.nombre, directores.apellido FROM directores INNER JOIN peliculas_directores ON directores.id_director = peliculas_directores.id_director WHERE peliculas_directores.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
+            const directores = await pool.query("SELECT directores.id_director, directores.nombre FROM directores INNER JOIN peliculas_directores ON directores.id_director = peliculas_directores.id_director WHERE peliculas_directores.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
 
             const idiomas = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [peliculas[0][i].id_pelicula]);
 
             if (peliculas[0][i].imagen === null) {
-                peliculas[0][i].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
+                peliculas[0][i].imagen = { url: IMAGEN_POR_DEFECTO, default: true };
             } else {
                 peliculas[0][i].imagen = { default: false, url: peliculas[0][i].imagen };
             }
@@ -110,7 +110,8 @@ export const getPelicula = async (req, res) => {
         const [idiomas] = await pool.query("SELECT idiomas.id_idioma, idiomas.nombre FROM idiomas INNER JOIN peliculas_idiomas ON idiomas.id_idioma = peliculas_idiomas.id_idioma WHERE peliculas_idiomas.id_pelicula = ?", [id]);
 
         if (pelicula[0].imagen === null) {
-            pelicula[0].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
+            pelicula[0].imagen = { url: IMAGEN_POR_DEFECTO, default: true };
+
         } else {
             pelicula[0].imagen = { default: false, url: pelicula[0].imagen };
         }
@@ -151,7 +152,7 @@ export const getPeliculaByGenero = async (req, res) => {
 
         for (let i = 0; i < peliculas.length; i++) {
             if (peliculas[i].imagen === null) {
-                peliculas[i].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
+                peliculas[i].imagen = { url: IMAGEN_POR_DEFECTO, default: true };
             } else {
                 peliculas[i].imagen = { default: false, url: peliculas[i].imagen };
             }
@@ -178,7 +179,7 @@ export const getPeliculaWithFunction = async (req, res) => {
         if (pelicula.length === 0) return res.status(404).json({ message: "La película no existe" });
 
         if (pelicula[0].imagen === null) {
-            pelicula[0].imagen = [{ url: IMAGEN_POR_DEFECTO, default: true }];
+            pelicula[0].imagen = { url: IMAGEN_POR_DEFECTO, default: true };
         } else {
             pelicula[0].imagen = { default: false, url: pelicula[0].imagen };
         }
@@ -465,18 +466,22 @@ export const updatePelicula = async (req, res) => {
 export const deletePelicula = async (req, res) => {
     try {
         const { id } = req.params;
-        const pelicula = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ?", [id]);
-        if (pelicula[0].length === 0) return res.status(400).json({ message: "La película no existe" });
+        const [pelicula] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula = ?", [id]);
+        if (pelicula.length === 0) return res.status(400).json({ message: "La película no existe" });
+        if (pelicula[0].status === 0) return res.status(400).json({ message: "La película ya está eliminada" });
+        if (pelicula[0].disponibilidad === 1) return res.status(400).json({ message: "La película está disponible, no se puede eliminar" });
 
         // Borramos en las relaciones que existen para no dejar basura en la DB
-        await pool.query("DELETE FROM peliculas_idiomas WHERE id_pelicula = ?", [id]);
-        await pool.query("DELETE FROM peliculas_actores WHERE id_pelicula = ?", [id]);
-        await pool.query("DELETE FROM peliculas_directores WHERE id_pelicula = ?", [id]);
-        await pool.query("DELETE FROM peliculas_generos WHERE id_pelicula = ?", [id]);
+        /*         await pool.query("DELETE FROM peliculas_idiomas WHERE id_pelicula = ?", [id]);
+                await pool.query("DELETE FROM peliculas_actores WHERE id_pelicula = ?", [id]);
+                await pool.query("DELETE FROM peliculas_directores WHERE id_pelicula = ?", [id]);
+                await pool.query("DELETE FROM peliculas_generos WHERE id_pelicula = ?", [id]); */
+
         const deletePelicula = await pool.query("UPDATE peliculas SET status = 0 WHERE id_pelicula = ?", [id]);
         if (deletePelicula[0].affectedRows === 0) return res.status(400).json({ message: "No se pudo eliminar la película" });
 
         res.json({ message: "Película eliminada" });
+
     } catch (error) {
         logger.error(`${error.message} - ${req.originalUrl} - ${req.method}`);
         res.status(500).json({ message: "Error del servidor" });
@@ -485,7 +490,13 @@ export const deletePelicula = async (req, res) => {
 
 export const getDisponibilidad = async (req, res) => {
     try {
-        const [peliculas] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula IN (SELECT id_pelicula FROM funciones WHERE status = 1) AND status = 1");
+        const { pagina, limite } = req.query;
+        if (!pagina || !limite) return res.status(400).json({ error: "Faltan parámetros" });
+        const offset = (pagina - 1) * limite;
+        const total = await pool.query("SELECT COUNT(*) FROM peliculas WHERE id_pelicula IN (SELECT id_pelicula FROM funciones WHERE status = 1) AND status = 1");
+        const totalPaginas = Math.ceil(total[0][0]["COUNT(*)"] / limite);
+        const [peliculas] = await pool.query("SELECT * FROM peliculas WHERE id_pelicula IN (SELECT id_pelicula FROM funciones WHERE status = 1) AND status = 1 LIMIT ? OFFSET ?", [Number(limite), Number(offset)]);
+        if (!peliculas) return res.status(404).json({ message: "No se encontraron peliculas" });
 
         //Si no tiene imagenes, se le asigna una por defecto
         for (let i = 0; i < peliculas.length; i++) {
@@ -498,6 +509,10 @@ export const getDisponibilidad = async (req, res) => {
 
 
         res.status(200).json({
+            total: total[0][0]["COUNT(*)"],
+            totalPaginas,
+            limite: Number(limite),
+            pagina: Number(pagina),
             peliculas: peliculas,
         });
 
