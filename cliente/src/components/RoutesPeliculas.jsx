@@ -6,13 +6,19 @@ const RoutesPeliculas = () => {
     return (
         <div className="flex flex-col">
             <div className="">
-                <Tabs>
+                <Tabs
+                    value={false}
+                    indicatorColor="primary"
+                    textColor="primary"
+                    centered
+
+                >
                     <Tab label="Peliculas" value={1} to="./" component={Link} />
                     <Tab label="Actores" value={2} to="./actores" component={Link} />
                     <Tab label="Directores" value={3} to="./directores" component={Link} />
                     <Tab label="Generos" value={4} to="./generos" component={Link} />
                     <Tab label="Idiomas" value={5} to="./idiomas" component={Link} />
-                    <Tab label="Disponibilidad" value={5} to="./disponibilidad" component={Link} />
+                    <Tab label="Disponibilidad" value={6} to="./disponibilidad" component={Link} />
                 </Tabs>
             </div>
             <Divider />
